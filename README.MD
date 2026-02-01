@@ -23,7 +23,7 @@
   <a href="README.zh.md">中文</a>
 </p>
 
-**PulseAPK** is a professional-grade GUI for Android reverse engineering and security analysis, built with WPF and .NET 8. It combines the raw power of `apktool` with advanced static analysis capabilities, wrapped in a high-performance, cyberpunk-inspired interface. PulseAPK streamlines the entire workflow from decompilation to analysis, rebuilding, and signing.
+**PulseAPK** is a professional-grade, cross-platform GUI for Android reverse engineering and security analysis, built with Avalonia and .NET 8. It combines the raw power of `apktool` with advanced static analysis capabilities, wrapped in a high-performance, cyberpunk-inspired interface. PulseAPK streamlines the entire workflow from decompilation to analysis, rebuilding, and signing.
 
 [Watch the demo on YouTube](https://youtu.be/Mkdt0c-7Wwg)
 
@@ -91,7 +91,7 @@ PulseAPK includes a built-in static analyzer that scans decompiled code for comm
 
 PulseAPK utilizes a clean MVVM (Model-View-ViewModel) architecture:
 
-- **Core**: .NET 8.0, WPF.
+- **Core**: .NET 8.0, Avalonia (cross-platform UI).
 - **Analysis**: Custom Regex-based static analysis engine with hot-reloadable rules.
 - **Services**: Dedicated services for Apktool interaction, file system monitoring, and settings management.
 
