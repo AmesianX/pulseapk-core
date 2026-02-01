@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace PulseAPK.Utils
+namespace PulseAPK.Core.Utils
 {
     public static class FileSanitizer
     {

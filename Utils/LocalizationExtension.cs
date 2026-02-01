@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Data;
 using System.Windows.Markup;
-using PulseAPK.Services;
+using PulseAPK.Core.Services;
 
 namespace PulseAPK.Utils
 {

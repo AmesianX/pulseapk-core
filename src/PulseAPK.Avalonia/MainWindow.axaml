@@ -1,0 +1,48 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:PulseAPK.Core.ViewModels;assembly=PulseAPK.Core"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="650"
+        x:Class="PulseAPK.Avalonia.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="{Binding WindowTitle}">
+
+    <Window.DataTemplates>
+        <DataTemplate DataType="{x:Type vm:DecompileViewModel}">
+            <TextBlock Text="Decompile View (Not Ported Yet)" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BuildViewModel}">
+            <TextBlock Text="Build View (Not Ported Yet)" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+            <TextBlock Text="Settings View (Not Ported Yet)" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AnalyserViewModel}">
+            <TextBlock Text="Analyser View (Not Ported Yet)" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AboutViewModel}">
+            <TextBlock Text="About View (Not Ported Yet)" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </DataTemplate>
+    </Window.DataTemplates>
+
+    <Grid ColumnDefinitions="200, *">
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="#202020" Padding="10">
+            <StackPanel Spacing="10">
+                <TextBlock Text="PulseAPK" FontSize="20" FontWeight="Bold" Foreground="Cyan" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                
+                <Button Command="{Binding NavigateToDecompileCommand}" Content="Decompile" HorizontalAlignment="Stretch"/>
+                <Button Command="{Binding NavigateToBuildCommand}" Content="Build" HorizontalAlignment="Stretch"/>
+                <Button Command="{Binding NavigateToAnalyserCommand}" Content="Analyser" HorizontalAlignment="Stretch"/>
+                <Button Command="{Binding NavigateToSettingsCommand}" Content="Settings" HorizontalAlignment="Stretch"/>
+                <Button Command="{Binding NavigateToAboutCommand}" Content="About" HorizontalAlignment="Stretch"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Content -->
+        <Border Grid.Column="1" Background="#121212" Padding="20">
+            <ContentControl Content="{Binding CurrentView}"/>
+        </Border>
+    </Grid>
+</Window>

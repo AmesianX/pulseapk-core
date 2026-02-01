@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 
-namespace PulseAPK.Services
+namespace PulseAPK.Core.Services
 {
     public class AppSettings
     {

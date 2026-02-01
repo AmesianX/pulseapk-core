@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace PulseAPK.Services
+namespace PulseAPK.Core.Services
 {
     public enum Languages
     {

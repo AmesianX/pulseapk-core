@@ -4,7 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace PulseAPK.Services
+namespace PulseAPK.Core.Services
 {
     public class AnalysisRuleSet
     {

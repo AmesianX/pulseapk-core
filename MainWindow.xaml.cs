@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using PulseAPK.Core.ViewModels;
 
 namespace PulseAPK
 {
@@ -7,10 +8,10 @@ namespace PulseAPK
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        public MainWindow(MainViewModel viewModel)
         {
             InitializeComponent();
-            DataContext = new ViewModels.MainViewModel();
+            DataContext = viewModel;
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)

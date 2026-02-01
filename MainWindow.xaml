@@ -5,18 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PulseAPK"
         xmlns:utils="clr-namespace:PulseAPK.Utils"
-        xmlns:vm="clr-namespace:PulseAPK.ViewModels"
+        xmlns:vm="clr-namespace:PulseAPK.Core.ViewModels;assembly=PulseAPK.Core"
         xmlns:views="clr-namespace:PulseAPK.Views"
-        xmlns:properties="clr-namespace:PulseAPK.Properties"
+        xmlns:properties="clr-namespace:PulseAPK.Core.Properties;assembly=PulseAPK.Core"
         mc:Ignorable="d"
         Title="{Binding WindowTitle}" Height="650" Width="1000"
         Icon="Resources/CyberUnpack.ico"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource Brush.Background}">
 
-    <Window.DataContext>
-        <vm:MainViewModel/>
-    </Window.DataContext>
+    <!-- DataContext set in code-behind via DI -->
+
 
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:DecompileViewModel}">
