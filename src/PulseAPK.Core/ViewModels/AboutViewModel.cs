@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using PulseAPK.Core.Abstractions;
@@ -24,26 +25,19 @@ public partial class AboutViewModel : ObservableObject
     private string GetAppVersion()
     {
         var versionAssembly = ResolveVersionAssembly();
-        var informationalVersion = GetInformationalVersion(versionAssembly);
+        var version = GetVersionString(versionAssembly);
 
-        if (!string.IsNullOrWhiteSpace(informationalVersion))
+        if (string.IsNullOrWhiteSpace(version))
         {
-            var metadataSeparatorIndex = informationalVersion.IndexOf('+');
-            if (metadataSeparatorIndex >= 0)
-            {
-                informationalVersion = informationalVersion[..metadataSeparatorIndex];
-            }
-
-            var prereleaseSeparatorIndex = informationalVersion.IndexOf('-');
-            if (prereleaseSeparatorIndex >= 0)
-            {
-                informationalVersion = informationalVersion[..prereleaseSeparatorIndex];
-            }
+            version = GetProcessVersion();
         }
 
-        var version = string.IsNullOrWhiteSpace(informationalVersion)
-            ? versionAssembly.GetName().Version?.ToString(3) ?? "1.2.1"
-            : informationalVersion;
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            version = "Unknown";
+        }
+
+        version = NormalizeVersion(version);
 
         return string.Format(Properties.Resources.About_Version, version);
     }
@@ -74,6 +68,50 @@ public partial class AboutViewModel : ObservableObject
         }
 
         return assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
+    }
+
+    private static string? GetVersionString(Assembly assembly)
+    {
+        var informationalVersion = GetInformationalVersion(assembly);
+        if (!string.IsNullOrWhiteSpace(informationalVersion))
+        {
+            return informationalVersion;
+        }
+
+        return assembly.GetName().Version?.ToString(3);
+    }
+
+    private static string? GetProcessVersion()
+    {
+        if (string.IsNullOrWhiteSpace(Environment.ProcessPath))
+        {
+            return null;
+        }
+
+        var versionInfo = FileVersionInfo.GetVersionInfo(Environment.ProcessPath);
+        if (!string.IsNullOrWhiteSpace(versionInfo.ProductVersion))
+        {
+            return versionInfo.ProductVersion;
+        }
+
+        return versionInfo.FileVersion;
+    }
+
+    private static string NormalizeVersion(string version)
+    {
+        var metadataSeparatorIndex = version.IndexOf('+');
+        if (metadataSeparatorIndex >= 0)
+        {
+            version = version[..metadataSeparatorIndex];
+        }
+
+        var prereleaseSeparatorIndex = version.IndexOf('-');
+        if (prereleaseSeparatorIndex >= 0)
+        {
+            version = version[..prereleaseSeparatorIndex];
+        }
+
+        return version;
     }
 
     [RelayCommand]
