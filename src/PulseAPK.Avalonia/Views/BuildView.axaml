@@ -78,16 +78,17 @@
                 BorderThickness="1"
                 CornerRadius="6"
                 Padding="12">
-            <StackPanel Spacing="8">
+            <Grid RowDefinitions="Auto,*" RowSpacing="8">
                 <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConsoleLog]}"
                            FontWeight="SemiBold" />
-                <TextBox Text="{Binding ConsoleLog}"
+                <TextBox Grid.Row="1"
+                         Text="{Binding ConsoleLog}"
                          IsReadOnly="True"
                          AcceptsReturn="True"
                          TextWrapping="Wrap"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
-                         Height="220" />
-            </StackPanel>
+                         VerticalAlignment="Stretch" />
+            </Grid>
         </Border>
     </Grid>
 </UserControl>
