@@ -1,6 +1,6 @@
 # PulseAPK
 
-**PulseAPK** je profesionální GUI pro reverzní inženýrství Androidu a bezpečnostní analýzu, postavené na WPF a .NET 8. Kombinuje surovou sílu `apktool` s pokročilými možnostmi statické analýzy, zabalené do vysoce výkonného rozhraní inspirovaného cyberpunkem. PulseAPK zjednodušuje celý workflow od dekompilace přes analýzu, přestavbu až po podpis.
+**PulseAPK** je profesionální GUI pro reverzní inženýrství Androidu a bezpečnostní analýzu, postavené na Avalonia (.NET 8). Kombinuje surovou sílu `apktool` s pokročilými možnostmi statické analýzy, zabalené do vysoce výkonného rozhraní inspirovaného cyberpunkem. PulseAPK zjednodušuje celý workflow od dekompilace přes analýzu, přestavbu až po podpis.
 
 [Sledovat demo na YouTube](https://youtu.be/Mkdt0c-7Wwg)
 
@@ -74,7 +74,7 @@ PulseAPK obsahuje vestavěný statický analyzátor, který skenuje dekompilovan
 
 PulseAPK používá čistou MVVM (Model-View-ViewModel) architekturu:
 
-- **Core**: .NET 8.0, WPF.
+- **Core**: .NET 8.0, Avalonia.
 - **Analysis**: vlastní regexový statický analyzátor s pravidly pro hot reload.
 - **Services**: dedikované služby pro integraci Apktool, monitoring souborového systému a správu nastavení.
 

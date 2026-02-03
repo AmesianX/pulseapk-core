@@ -1,6 +1,6 @@
 # PulseAPK
 
-**PulseAPK** egy professzionális GUI Android visszafejtéshez és biztonsági elemzéshez, WPF-fel és .NET 8-cal készítve. Ötvözi az `apktool` nyers erejét a fejlett statikus elemzési képességekkel, mindezt egy nagy teljesítményű, cyberpunk ihlette felületen. A PulseAPK leegyszerűsíti a teljes munkafolyamatot a dekompilálástól az elemzésen át az újraépítésig és aláírásig.
+**PulseAPK** egy professzionális GUI Android visszafejtéshez és biztonsági elemzéshez, Avalonia (.NET 8)-cal készítve. Ötvözi az `apktool` nyers erejét a fejlett statikus elemzési képességekkel, mindezt egy nagy teljesítményű, cyberpunk ihlette felületen. A PulseAPK leegyszerűsíti a teljes munkafolyamatot a dekompilálástól az elemzésen át az újraépítésig és aláírásig.
 
 [Demo megtekintése YouTube-on](https://youtu.be/Mkdt0c-7Wwg)
 
@@ -74,7 +74,7 @@ A PulseAPK beépített statikus elemzőt tartalmaz, amely a dekompilált kódot 
 
 A PulseAPK tiszta MVVM (Model-View-ViewModel) architektúrát használ:
 
-- **Core**: .NET 8.0, WPF.
+- **Core**: .NET 8.0, Avalonia.
 - **Analysis**: egyedi regex alapú statikus elemzőmotor hot-reloadolható szabályokkal.
 - **Services**: dedikált szolgáltatások Apktool integrációhoz, fájlrendszer-monitorozáshoz és beállításkezeléshez.
 

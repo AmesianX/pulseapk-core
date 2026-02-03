@@ -1,6 +1,6 @@
 # PulseAPK
 
-**PulseAPK** ir profesionāls Android reversās inženierijas un drošības analīzes GUI, kas veidots ar WPF un .NET 8. Tas apvieno `apktool` jaudu ar uzlabotām statiskās analīzes iespējām, ietērpts augstas veiktspējas, kiberpanka iedvesmotā saskarnē. PulseAPK racionalizē visu darbplūsmu no dekompilēšanas līdz analīzei, pārbūvei un parakstīšanai.
+**PulseAPK** ir profesionāls Android reversās inženierijas un drošības analīzes GUI, kas veidots ar Avalonia (.NET 8). Tas apvieno `apktool` jaudu ar uzlabotām statiskās analīzes iespējām, ietērpts augstas veiktspējas, kiberpanka iedvesmotā saskarnē. PulseAPK racionalizē visu darbplūsmu no dekompilēšanas līdz analīzei, pārbūvei un parakstīšanai.
 
 [Skatīt demo YouTube](https://youtu.be/Mkdt0c-7Wwg)
 
@@ -74,7 +74,7 @@ PulseAPK ietver iebūvētu statisko analizatoru, kas skenē dekompilētu kodu, m
 
 PulseAPK izmanto tīru MVVM (Model-View-ViewModel) arhitektūru:
 
-- **Core**: .NET 8.0, WPF.
+- **Core**: .NET 8.0, Avalonia.
 - **Analysis**: pielāgots regex balstīts statiskās analīzes dzinējs ar karsti pārlādējamiem noteikumiem.
 - **Services**: specializēti servisi Apktool integrācijai, failu sistēmas uzraudzībai un iestatījumu pārvaldībai.
 

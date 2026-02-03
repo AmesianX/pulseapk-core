@@ -1,6 +1,6 @@
 # PulseAPK
 
-**PulseAPK** on Androidin käänteismallinnuksen ja turvallisuusanalyysin ammattitason GUI, joka on rakennettu WPF:llä ja .NET 8:lla. Se yhdistää `apktool`-työkalun raakavoiman edistyneisiin staattisen analyysin ominaisuuksiin ja tarjoaa suorituskykyisen, kyberpunk-henkisen käyttöliittymän. PulseAPK sujuvoittaa koko työnkulun purkamisesta analyysiin, uudelleenrakennukseen ja allekirjoittamiseen.
+**PulseAPK** on Androidin käänteismallinnuksen ja turvallisuusanalyysin ammattitason GUI, joka on rakennettu Avalonia (.NET 8):lla. Se yhdistää `apktool`-työkalun raakavoiman edistyneisiin staattisen analyysin ominaisuuksiin ja tarjoaa suorituskykyisen, kyberpunk-henkisen käyttöliittymän. PulseAPK sujuvoittaa koko työnkulun purkamisesta analyysiin, uudelleenrakennukseen ja allekirjoittamiseen.
 
 [Katso demo YouTubessa](https://youtu.be/Mkdt0c-7Wwg)
 
@@ -74,7 +74,7 @@ PulseAPK sisältää sisäänrakennetun staattisen analysoijan, joka skannaa pur
 
 PulseAPK hyödyntää selkeää MVVM-arkkitehtuuria (Model-View-ViewModel):
 
-- **Core**: .NET 8.0, WPF.
+- **Core**: .NET 8.0, Avalonia.
 - **Analysis**: oma regex-pohjainen staattinen analyysimoottori, jossa säännöt voidaan ladata uudelleen.
 - **Services**: omistetut palvelut Apktool-integraatiolle, tiedostojärjestelmän seurannalle ja asetusten hallinnalle.
 
