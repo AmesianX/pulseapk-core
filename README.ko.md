@@ -1,6 +1,6 @@
 # PulseAPK
 
-**PulseAPK**는 WPF와 .NET 8로 구축된 Android 리버스 엔지니어링 및 보안 분석용 전문 GUI입니다. `apktool`의 강력함과 고급 정적 분석 기능을 결합해 사이버펑크 스타일의 고성능 인터페이스로 제공합니다. PulseAPK는 디컴파일부터 분석, 재빌드, 서명까지 전체 워크플로를 간소화합니다.
+**PulseAPK**는 Avalonia (.NET 8)로 구축된 Android 리버스 엔지니어링 및 보안 분석용 전문 GUI입니다. `apktool`의 강력함과 고급 정적 분석 기능을 결합해 사이버펑크 스타일의 고성능 인터페이스로 제공합니다. PulseAPK는 디컴파일부터 분석, 재빌드, 서명까지 전체 워크플로를 간소화합니다.
 
 [YouTube 데모 보기](https://youtu.be/Mkdt0c-7Wwg)
 
@@ -74,7 +74,7 @@ PulseAPK는 디컴파일된 코드를 스캔하여 일반적인 보안 지표를
 
 PulseAPK는 깔끔한 MVVM(Model-View-ViewModel) 아키텍처를 사용합니다:
 
-- **Core**: .NET 8.0, WPF.
+- **Core**: .NET 8.0, Avalonia.
 - **Analysis**: 핫 리로드 가능한 규칙을 갖춘 커스텀 정규식 기반 정적 분석 엔진.
 - **Services**: Apktool 연동, 파일 시스템 모니터링, 설정 관리를 위한 전용 서비스.
 
