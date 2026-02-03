@@ -23,7 +23,13 @@
                                FontWeight="SemiBold" />
                     <TextBox Text="{Binding ApkPath}"
                              Watermark="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SelectApk]}"
-                             IsReadOnly="True" />
+                             IsReadOnly="True"
+                             IsTabStop="False"
+                             IsHitTestVisible="False" />
+                    <TextBlock Text="Tip: Click Browse to choose an APK file."
+                               FontSize="12"
+                               Opacity="0.7"
+                               IsVisible="{Binding IsHintVisible}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
                     <Button Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[Browse]}"
