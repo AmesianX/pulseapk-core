@@ -6,7 +6,7 @@
 
 ![PulseAPK UI](images/pulse_apk_decompile.png)
 
-Use the Analysis tab to select the decompiled project folder and run Smali analysis.
+Analysis cilnē izvēlieties dekompilētā projekta mapi un palaidiet Smali analīzi.
 
 ![PulseAPK Smali Analysis](images/apktool_analysis.png)
 
@@ -18,7 +18,7 @@ Ja vēlaties uzbūvēt (un, ja nepieciešams, parakstīt) Smali mapi, izmantojie
 
 - **🛡️ Statiskā drošības analīze**: automātiski skenē Smali kodu, lai noteiktu ievainojamības, tostarp root noteikšanu, emulatora pārbaudes, cieti iekodētus akreditācijas datus un nedrošu SQL/HTTP lietojumu.
 - **⚙️ Dinamiska noteikumu dzinējs**: pilnībā pielāgojami analīzes noteikumi, izmantojot `smali_analysis_rules.json`. Noteikšanas paraugus var mainīt bez lietotnes restartēšanas. Kešošana nodrošina optimālu veiktspēju.
-- **🚀 Moderns UI/UX**: responsīva tumšā tēma, kas paredzēta efektivitātei, ar vilkšanas un nomešanas atbalstu un reāllaika konsoles atgriezenisko saiti.
+- **🚀 Moderns UI/UX**: responsīva tumšā tēma, kas paredzēta efektivitātei, ar reāllaika konsoles atgriezenisko saiti.
 - **📦 Pilnīga darbplūsma**: dekompilēt, analizēt, rediģēt, pārbūvēt un parakstīt APK vienā vidē.
 - **⚡ Drošs un stabils**: ietver gudru validāciju un avāriju novēršanas mehānismus, lai aizsargātu darba vidi un datus.
 - **🔧 Pilnībā konfigurējams**: ērta rīku ceļu (Java, Apktool), darba vides iestatījumu un analīzes parametru pārvaldība.

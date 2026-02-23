@@ -6,7 +6,7 @@
 
 ![PulseAPK UI](images/pulse_apk_decompile.png)
 
-Use the Analysis tab to select the decompiled project folder and run Smali analysis.
+Analysis skirtuke pasirinkite dekompiliuoto projekto aplanką ir paleiskite Smali analizę.
 
 ![PulseAPK Smali Analysis](images/apktool_analysis.png)
 
@@ -18,7 +18,7 @@ Jei norite sukurti (ir, jei reikia, pasirašyti) Smali aplanką, naudokite „Bu
 
 - **🛡️ Statinė saugumo analizė**: automatiškai skenuoja Smali kodą dėl pažeidžiamumų, įskaitant root aptikimą, emuliatoriaus patikras, įkoduotus prisijungimo duomenis ir nesaugų SQL/HTTP naudojimą.
 - **⚙️ Dinaminis taisyklių variklis**: visiškai pritaikomos analizės taisyklės per `smali_analysis_rules.json`. Aptikimo šablonus galima keisti neperkraunant programos. Talpykla užtikrina optimalų našumą.
-- **🚀 Moderni UI/UX**: responsyvi, tamsi sąsaja efektyviam darbui su vilkimo ir numetimo palaikymu bei realaus laiko konsolės grįžtamuoju ryšiu.
+- **🚀 Moderni UI/UX**: responsyvi, tamsi sąsaja efektyviam darbui su realaus laiko konsolės grįžtamuoju ryšiu.
 - **📦 Pilna darbo eiga**: dekompiliuokite, analizuokite, redaguokite, perkompiliuokite ir pasirašykite APK vienoje aplinkoje.
 - **⚡ Saugus ir patikimas**: apima išmanų tikrinimą ir avarijų prevencijos mechanizmus, kurie saugo darbo erdvę ir duomenis.
 - **🔧 Visiškai konfigūruojamas**: lengvai valdykite įrankių kelius (Java, Apktool), darbo erdvės nustatymus ir analizės parametrus.

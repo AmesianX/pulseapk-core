@@ -6,7 +6,7 @@
 
 ![PulseAPK UI](images/pulse_apk_decompile.png)
 
-Use the Analysis tab to select the decompiled project folder and run Smali analysis.
+استخدم تبويب Analysis لتحديد مجلد المشروع المفكك وتشغيل تحليل Smali.
 
 ![PulseAPK Smali Analysis](images/apktool_analysis.png)
 
@@ -18,7 +18,7 @@ Use the Analysis tab to select the decompiled project folder and run Smali analy
 
 - **🛡️ تحليل أمني ثابت**: يفحص كود Smali تلقائيًا بحثًا عن الثغرات، بما في ذلك اكتشاف الروت، وفحوصات المحاكي، والبيانات الاعتمادية المضمنة، والاستخدام غير الآمن لـ SQL/HTTP.
 - **⚙️ محرك قواعد ديناميكي**: قواعد تحليل قابلة للتخصيص بالكامل عبر `smali_analysis_rules.json`. يمكن تعديل أنماط الكشف دون إعادة تشغيل التطبيق. يستخدم التخزين المؤقت لأداء أفضل.
-- **🚀 Modern UI/UX**: A responsive, dark-themed interface designed for efficiency, with real-time console feedback.
+- **🚀 واجهة حديثة**: واجهة داكنة متجاوبة مصممة للكفاءة مع عرض مخرجات وحدة التحكم في الوقت الحقيقي.
 - **📦 سير عمل متكامل**: فك، تحليل، تعديل، إعادة بناء وتوقيع ملفات APK ضمن بيئة واحدة.
 - **⚡ آمن ومتين**: يتضمن آليات تحقق ذكية ومنع الأعطال لحماية مساحة العمل والبيانات.
 - **🔧 قابلية تهيئة كاملة**: إدارة مسارات الأدوات (Java، Apktool) وإعدادات مساحة العمل ومعلمات التحليل بسهولة.

@@ -6,7 +6,7 @@
 
 ![PulseAPK UI](images/pulse_apk_decompile.png)
 
-Use the Analysis tab to select the decompiled project folder and run Smali analysis.
+Käytä Analysis-välilehteä valitaksesi dekompiloidun projektikansion ja suorittaaksesi Smali-analyysin.
 
 ![PulseAPK Smali Analysis](images/apktool_analysis.png)
 
@@ -18,7 +18,7 @@ Jos haluat rakentaa (ja tarvittaessa allekirjoittaa) Smali-kansion, käytä "Bui
 
 - **🛡️ Staattinen turvallisuusanalyysi**: skannaa Smali-koodin haavoittuvuuksien varalta, mukaan lukien root-tunnistus, emulaattoritarkistukset, kovakoodatut tunnistetiedot ja turvaton SQL/HTTP-käyttö.
 - **⚙️ Dynaaminen sääntökone**: täysin muokattavat analyysisäännöt `smali_analysis_rules.json`-tiedostolla. Tunnistusmalleja voi muuttaa ilman uudelleenkäynnistystä. Välimuisti parantaa suorituskykyä.
-- **🚀 Modern UI/UX**: A responsive, dark-themed interface designed for efficiency, with real-time console feedback.
+- **🚀 Moderni UI/UX**: responsiivinen tumma käyttöliittymä tehokasta työskentelyä varten, reaaliaikaisella konsolipalautteella.
 - **📦 Täydellinen työnkulku**: purku, analyysi, muokkaus, uudelleenrakennus ja APK-allekirjoitus yhdessä ympäristössä.
 - **⚡ Turvallinen ja luotettava**: älykäs validointi ja kaatumisen estomekanismit suojaavat työtilaa ja dataa.
 - **🔧 Täysin konfiguroitava**: hallitse työkalupolut (Java, Apktool), työtilan asetukset ja analyysiparametrit helposti.

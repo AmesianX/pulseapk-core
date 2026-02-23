@@ -6,7 +6,7 @@
 
 ![PulseAPK UI](images/pulse_apk_decompile.png)
 
-Use the Analysis tab to select the decompiled project folder and run Smali analysis.
+V kartě Analysis vyberte složku dekompilovaného projektu a spusťte analýzu Smali.
 
 ![PulseAPK Smali Analysis](images/apktool_analysis.png)
 
@@ -18,7 +18,7 @@ Pokud chcete složku Smali sestavit (a případně podepsat), použijte sekci "B
 
 - **🛡️ Statická bezpečnostní analýza**: automaticky skenuje Smali kód na zranitelnosti, včetně detekce rootu, kontrol emulátoru, natvrdo zadaných přihlašovacích údajů a nezabezpečeného použití SQL/HTTP.
 - **⚙️ Dynamický engine pravidel**: plně přizpůsobitelná analytická pravidla přes `smali_analysis_rules.json`. Vzory detekce lze měnit bez restartu aplikace. Kešování zajišťuje optimální výkon.
-- **🚀 Modern UI/UX**: A responsive, dark-themed interface designed for efficiency, with real-time console feedback.
+- **🚀 Moderní UI/UX**: responzivní tmavé rozhraní navržené pro efektivitu s konzolovou zpětnou vazbou v reálném čase.
 - **📦 Kompletní workflow**: dekompilace, analýza, úpravy, přestavba a podpis APK v jednom prostředí.
 - **⚡ Bezpečné a robustní**: zahrnuje inteligentní validaci a prevenci pádů pro ochranu pracovního prostoru a dat.
 - **🔧 Plně konfigurovatelné**: správa cest nástrojů (Java, Apktool), nastavení pracovního prostoru a analytických parametrů.

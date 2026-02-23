@@ -6,7 +6,7 @@
 
 ![PulseAPK UI](images/pulse_apk_decompile.png)
 
-Use the Analysis tab to select the decompiled project folder and run Smali analysis.
+在 Analysis 标签页中选择反编译后的项目文件夹并运行 Smali 分析。
 
 ![PulseAPK Smali Analysis](images/apktool_analysis.png)
 
@@ -18,7 +18,7 @@ Use the Analysis tab to select the decompiled project folder and run Smali analy
 
 - **🛡️ 静态安全分析**：自动扫描 Smali 代码中的漏洞，包括 root 检测、模拟器检测、硬编码凭据以及不安全的 SQL/HTTP 使用。
 - **⚙️ 动态规则引擎**：通过 `smali_analysis_rules.json` 完全可定制分析规则。无需重启应用即可实时修改检测模式，并使用缓存提升性能。
-- **🚀 Modern UI/UX**: A responsive, dark-themed interface designed for efficiency, with real-time console feedback.
+- **🚀 现代 UI/UX**：响应式深色界面，专为效率设计，提供实时控制台反馈。
 - **📦 全流程一体化**：在统一环境中完成 APK 的反编译、分析、编辑、重新编译与签名。
 - **⚡ 安全可靠**：包含智能校验与崩溃预防机制，保护工作区与数据。
 - **🔧 完全可配置**：轻松管理工具路径（Java、Apktool）、工作区设置与分析参数。
