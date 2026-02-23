@@ -1,4 +1,4 @@
-using PulseAPK.Utils;
+using PulseAPK.Core.Utils;
 using Xunit;
 
 namespace PulseAPK.Tests.Utils
