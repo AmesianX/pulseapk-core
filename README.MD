@@ -33,7 +33,7 @@ PulseAPK is organized into a single-window workflow with top navigation for each
 
 - **🛡️ Static Security Analysis**: Automatically scan Smali code for vulnerabilities, including root detection, emulator checks, hardcoded credentials, and insecure SQL/HTTP usage.
 - **⚙️ Dynamic Rule Engine**: Fully customizable analysis rules via `smali_analysis_rules.json`. Modify detection patterns on the fly without restarting the application. Uses caching for optimal performance.
-- **🚀 Modern UI/UX**: A responsive, dark-themed interface designed for efficiency, featuring drag-and-drop support and real-time console feedback.
+- **🚀 Modern UI/UX**: A responsive, dark-themed interface designed for efficiency, with real-time console feedback.
 - **📦 Complete Workflow**: Decompile, Analyze, Edit, Recompile, and Sign APKs in one unified environment.
 - **⚡ Safe & Robust**: Includes intelligent validation and crash prevention mechanisms to protect your workspace and data.
 - **🔧 Fully Configurable**: Manage tool paths (Java, Apktool), workspace settings, and analysis parameters with ease.
@@ -50,7 +50,7 @@ PulseAPK includes a built-in static analyzer that scans decompiled code for comm
 *Rules are defined in `smali_analysis_rules.json` and can be customized to your specific needs.*
 
 ### APK Management
-- **Decompile**: Drag-and-drop an APK, choose decode options (resources, sources, manifest handling), and extract to an output folder or the APK’s own folder.
+- **Decompile**: Select an APK, choose decode options (resources, sources, manifest handling), and extract to an output folder or the APK’s own folder.
 - **Build**: Recompile from a project folder, set output name and location, toggle AAPT2, and optionally sign the APK in one step.
 - **Analyser**: Point to a decompiled project folder, run the Smali analysis, and export the report when needed.
 
