@@ -1,18 +1,33 @@
 # PulseAPK
 
+<p align="center">
+  🌍 <strong>Languages</strong><br>
+  <a href="README.md">English</a> |
+  <a href="README.de.md">Deutsch</a> |
+  <a href="README.es.md">Español</a> |
+  <a href="README.fr.md">Français</a> |
+  <a href="README.he.md">עברית</a> |
+  <a href="README.ko.md">한국어</a> |
+  <a href="README.be.md">Беларуская</a> |
+  <a href="README.fi.md">Suomi</a> |
+  <a href="README.lv.md">Latviešu</a> |
+  <a href="README.et.md">Eesti</a> |
+  <a href="README.lt.md">Lietuvių</a> |
+  <a href="README.cs.md">Čeština</a> |
+  <a href="README.sk.md">Slovenčina</a> |
+  <a href="README.hu.md">Magyar</a> |
+  <a href="README.ar.md">العربية</a> |
+  <a href="README.pt.md">Português</a> |
+  <a href="README.ru.md">Русский</a> |
+  <a href="README.uk.md">Українська</a> |
+  <a href="README.zh.md">中文</a>
+</p>
+
 **PulseAPK** ir profesionāls Android reversās inženierijas un drošības analīzes GUI, kas veidots ar Avalonia (.NET 8). Tas apvieno `apktool` jaudu ar uzlabotām statiskās analīzes iespējām, ietērpts augstas veiktspējas, kiberpanka iedvesmotā saskarnē. PulseAPK racionalizē visu darbplūsmu no dekompilēšanas līdz analīzei, pārbūvei un parakstīšanai.
 
 [Skatīt demo YouTube](https://youtu.be/Mkdt0c-7Wwg)
 
-![PulseAPK UI](images/pulse_apk_decompile.png)
-
-Analysis cilnē izvēlieties dekompilētā projekta mapi un palaidiet Smali analīzi.
-
-![PulseAPK Smali Analysis](images/apktool_analysis.png)
-
-Ja vēlaties uzbūvēt (un, ja nepieciešams, parakstīt) Smali mapi, izmantojiet "Build APK" sadaļu.
-
-![PulseAPK Build APK](images/pulse_apk_build.png)
+PulseAPK ir organizēts kā vienloga darbplūsma ar augšējo navigāciju katram rīkam: **Decompile**, **Build**, **Analyser**, **Settings** un **About**. Katra sadaļa aptver vienu APK dzīves cikla posmu, lai jūs varētu pāriet no dekodēšanas uz analīzi un parakstīšanu, neizejot no lietotnes.
 
 ## Galvenās funkcijas
 
@@ -44,7 +59,7 @@ PulseAPK ietver iebūvētu statisko analizatoru, kas skenē dekompilētu kodu, m
 1.  **Java Runtime Environment (JRE)**: nepieciešams `apktool`. Pārliecinieties, ka `java` ir jūsu sistēmas `PATH`.
 2.  **Apktool**: lejupielādējiet `apktool.jar` no [ibotpeaches.github.io](https://ibotpeaches.github.io/Apktool/).
 3.  **Ubersign (Uber APK Signer)**: nepieciešams pārbūvēto APK parakstīšanai. Lejupielādējiet jaunāko `uber-apk-signer.jar` no [GitHub releases](https://github.com/patrickfav/uber-apk-signer/releases).
-4.  **.NET 8.0 Runtime**: nepieciešams PulseAPK palaišanai Windows vidē.
+4.  **.NET 8.0 Runtime**: nepieciešams PulseAPK palaišanai atbalstītās platformās (Windows, Linux un macOS).
 
 ## Ātrās palaišanas ceļvedis
 
@@ -69,6 +84,25 @@ PulseAPK ietver iebūvētu statisko analizatoru, kas skenē dekompilētu kodu, m
     - Rediģējiet failus projekta mapē.
     - Izmantojiet **Build** cilni, lai uzbūvētu jaunu APK.
     - Izmantojiet **Sign** cilni, lai parakstītu izvades APK.
+
+
+## Ekrānattēli
+
+### 1) Dekompilēšanas darbplūsma
+![PulseAPK dekompilēšanas ekrāns](images/pulse_apk_decompile.png)
+- Šajā ekrānā izvēlaties ievades APK un izvades mapi, pēc tam palaižat dekompilēšanu.
+- Vienkārša plūsma: izvēlēties APK -> iestatīt izvades ceļu -> nospiest decompile.
+
+### 2) Būvēšanas darbplūsma
+![PulseAPK būvēšanas ekrāns](images/pulse_apk_build.png)
+- Šajā ekrānā dekompilētais projekts tiek pārbūvēts jaunā APK.
+- Vienkārša plūsma: izvēlēties projekta mapi -> iestatīt izvades nosaukumu/ceļu -> nospiest build (un vajadzības gadījumā ieslēgt parakstīšanu).
+
+### 3) Statiskās analīzes rezultāti
+![PulseAPK analīzes izvade](images/pulse_apk_analysis.png)
+- Šis skats parāda Smali/statiskās analīzes drošības atradumus.
+- Vienkārša plūsma: vispirms dekompilēt -> atvērt analīzes cilni/izvadi -> pārskatīt atradumus un eksportēt atskaiti.
+
 
 ## Tehniskā arhitektūra
 

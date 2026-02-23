@@ -1,18 +1,33 @@
 # PulseAPK
 
+<p align="center">
+  🌍 <strong>Languages</strong><br>
+  <a href="README.md">English</a> |
+  <a href="README.de.md">Deutsch</a> |
+  <a href="README.es.md">Español</a> |
+  <a href="README.fr.md">Français</a> |
+  <a href="README.he.md">עברית</a> |
+  <a href="README.ko.md">한국어</a> |
+  <a href="README.be.md">Беларуская</a> |
+  <a href="README.fi.md">Suomi</a> |
+  <a href="README.lv.md">Latviešu</a> |
+  <a href="README.et.md">Eesti</a> |
+  <a href="README.lt.md">Lietuvių</a> |
+  <a href="README.cs.md">Čeština</a> |
+  <a href="README.sk.md">Slovenčina</a> |
+  <a href="README.hu.md">Magyar</a> |
+  <a href="README.ar.md">العربية</a> |
+  <a href="README.pt.md">Português</a> |
+  <a href="README.ru.md">Русский</a> |
+  <a href="README.uk.md">Українська</a> |
+  <a href="README.zh.md">中文</a>
+</p>
+
 **PulseAPK** هي واجهة رسومية احترافية لهندسة عكسية وتحليل أمان تطبيقات أندرويد، مبنية باستخدام Avalonia (.NET 8). تجمع بين قوة `apktool` الخام وإمكانات تحليل ثابت متقدمة ضمن واجهة عالية الأداء بطابع سايبربانك. تعمل PulseAPK على تبسيط سير العمل بالكامل من التفكيك إلى التحليل، ثم إعادة البناء والتوقيع.
 
 [شاهد العرض التوضيحي على YouTube](https://youtu.be/Mkdt0c-7Wwg)
 
-![PulseAPK UI](images/pulse_apk_decompile.png)
-
-استخدم تبويب Analysis لتحديد مجلد المشروع المفكك وتشغيل تحليل Smali.
-
-![PulseAPK Smali Analysis](images/apktool_analysis.png)
-
-إذا أردت بناء مجلد Smali (وتوقيعه عند الحاجة) فاستخدم قسم "Build APK".
-
-![PulseAPK Build APK](images/pulse_apk_build.png)
+PulseAPK منظم كمسار عمل داخل نافذة واحدة مع تنقل علوي لكل أداة: **Decompile** و **Build** و **Analyser** و **Settings** و **About**. يركز كل قسم على مرحلة من دورة حياة APK حتى تنتقل من فك الترميز إلى التحليل والتوقيع دون مغادرة التطبيق.
 
 ## الميزات الرئيسية
 
@@ -44,7 +59,7 @@
 1.  **Java Runtime Environment (JRE)**: مطلوب لـ `apktool`. تأكد من أن `java` ضمن متغير البيئة `PATH`.
 2.  **Apktool**: حمّل `apktool.jar` من [ibotpeaches.github.io](https://ibotpeaches.github.io/Apktool/).
 3.  **Ubersign (Uber APK Signer)**: مطلوب لتوقيع APK المُعاد بناؤه. حمّل أحدث `uber-apk-signer.jar` من [إصدارات GitHub](https://github.com/patrickfav/uber-apk-signer/releases).
-4.  **.NET 8.0 Runtime**: مطلوب لتشغيل PulseAPK على Windows.
+4.  **.NET 8.0 Runtime**: مطلوب لتشغيل PulseAPK على المنصات المدعومة (Windows وLinux وmacOS).
 
 ## دليل البدء السريع
 
@@ -69,6 +84,25 @@
     - عدّل الملفات في مجلد المشروع.
     - استخدم تبويب **Build** لإعادة البناء إلى APK جديد.
     - استخدم تبويب **Sign** لتوقيع APK الناتج.
+
+
+## لقطات الشاشة
+
+### 1) سير عمل التفكيك
+![شاشة تفكيك PulseAPK](images/pulse_apk_decompile.png)
+- تُستخدم هذه الشاشة لاختيار APK المُدخل ومجلد الإخراج ثم بدء التفكيك.
+- المسار البسيط: اختر APK -> حدّد مسار الإخراج -> اضغط decompile.
+
+### 2) سير عمل البناء
+![شاشة بناء PulseAPK](images/pulse_apk_build.png)
+- تُستخدم هذه الشاشة لإعادة بناء مشروع مفكك إلى APK جديد.
+- المسار البسيط: اختر مجلد المشروع -> حدّد الاسم/المسار -> اضغط build (وفعّل التوقيع عند الحاجة).
+
+### 3) نتائج التحليل الثابت
+![مخرجات تحليل PulseAPK](images/pulse_apk_analysis.png)
+- تعرض هذه الواجهة نتائج الأمان من تحليل Smali/التحليل الثابت.
+- المسار البسيط: فكك أولاً -> افتح تبويب/مخرجات التحليل -> راجع النتائج وصدّر التقرير.
+
 
 ## البنية التقنية
 

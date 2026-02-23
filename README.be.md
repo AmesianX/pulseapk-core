@@ -1,18 +1,33 @@
 # PulseAPK
 
+<p align="center">
+  🌍 <strong>Languages</strong><br>
+  <a href="README.md">English</a> |
+  <a href="README.de.md">Deutsch</a> |
+  <a href="README.es.md">Español</a> |
+  <a href="README.fr.md">Français</a> |
+  <a href="README.he.md">עברית</a> |
+  <a href="README.ko.md">한국어</a> |
+  <a href="README.be.md">Беларуская</a> |
+  <a href="README.fi.md">Suomi</a> |
+  <a href="README.lv.md">Latviešu</a> |
+  <a href="README.et.md">Eesti</a> |
+  <a href="README.lt.md">Lietuvių</a> |
+  <a href="README.cs.md">Čeština</a> |
+  <a href="README.sk.md">Slovenčina</a> |
+  <a href="README.hu.md">Magyar</a> |
+  <a href="README.ar.md">العربية</a> |
+  <a href="README.pt.md">Português</a> |
+  <a href="README.ru.md">Русский</a> |
+  <a href="README.uk.md">Українська</a> |
+  <a href="README.zh.md">中文</a>
+</p>
+
 **PulseAPK** — прафесійны графічны інтэрфейс для зваротнай інжынерыі Android і аналізу бяспекі, створаны з Avalonia (.NET 8). Ён аб'ядноўвае магутнасць `apktool` з пашыранымі магчымасцямі статычнага аналізу ў высокапрадукцыйным, кіберпанк-натхнёным інтэрфейсе. PulseAPK спрашчае ўвесь працоўны працэс ад дэккампіляцыі да аналізу, перазборкі і падпісання.
 
 [Паглядзець дэма на YouTube](https://youtu.be/Mkdt0c-7Wwg)
 
-![PulseAPK UI](images/pulse_apk_decompile.png)
-
-Выкарыстоўвайце ўкладку Analysis, каб выбраць папку дэккампіляванага праекта і запусціць аналіз Smali.
-
-![PulseAPK Smali Analysis](images/apktool_analysis.png)
-
-Калі вы хочаце сабраць (і пры неабходнасці падпісаць) папку Smali — выкарыстоўвайце раздзел "Build APK".
-
-![PulseAPK Build APK](images/pulse_apk_build.png)
+PulseAPK арганізаваны як працоўны працэс у адным акне з верхняй навігацыяй па інструментах: **Decompile**, **Build**, **Analyser**, **Settings** і **About**. Кожны раздзел пакрывае асобны этап жыццёвага цыкла APK, каб вы маглі пераходзіць ад дэкадавання да аналізу і подпісу, не пакідаючы праграму.
 
 ## Асноўныя магчымасці
 
@@ -44,7 +59,7 @@ PulseAPK мае ўбудаваны статычны аналізатар, які
 1.  **Java Runtime Environment (JRE)**: патрэбны для `apktool`. Упэўніцеся, што `java` ёсць у `PATH`.
 2.  **Apktool**: спампуйце `apktool.jar` з [ibotpeaches.github.io](https://ibotpeaches.github.io/Apktool/).
 3.  **Ubersign (Uber APK Signer)**: патрэбны для падпісання перазбораных APK. Спампуйце апошні `uber-apk-signer.jar` з [GitHub releases](https://github.com/patrickfav/uber-apk-signer/releases).
-4.  **.NET 8.0 Runtime**: патрэбны для запуску PulseAPK у Windows.
+4.  **.NET 8.0 Runtime**: патрэбны для запуску PulseAPK на падтрымліваемых платформах (Windows, Linux і macOS).
 
 ## Хуткі старт
 
@@ -69,6 +84,25 @@ PulseAPK мае ўбудаваны статычны аналізатар, які
     - Рэдагуйце файлы ў папцы праекта.
     - Скарыстайцеся ўкладкай **Build**, каб сабраць новы APK.
     - Скарыстайцеся ўкладкай **Sign**, каб падпісаць выніковы APK.
+
+
+## Скрыншоты
+
+### 1) Працэс дэккампіляцыі
+![Экран дэккампіляцыі PulseAPK](images/pulse_apk_decompile.png)
+- На гэтым экране выбіраюцца ўваходны APK і тэчка вываду, пасля чаго запускаецца дэккампіляцыя.
+- Просты сцэнар: выбраць APK -> задаць шлях вываду -> націснуць decompile.
+
+### 2) Працэс зборкі
+![Экран зборкі PulseAPK](images/pulse_apk_build.png)
+- На гэтым экране дэккампіляваны праект перазбіраецца ў новы APK.
+- Просты сцэнар: выбраць тэчку праекта -> задаць імя/шлях вываду -> націснуць build (і ўключыць подпіс пры патрэбе).
+
+### 3) Вынікі статычнага аналізу
+![Вынік аналізу PulseAPK](images/pulse_apk_analysis.png)
+- Тут паказваюцца вынікі пошуку праблем бяспекі ў Smali/статычным аналізе.
+- Просты сцэнар: спачатку дэккампіляваць -> адкрыць укладку/вывад аналізу -> праверыць вынікі і экспартаваць справаздачу.
+
 
 ## Тэхнічная архітэктура
 

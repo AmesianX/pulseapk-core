@@ -1,18 +1,33 @@
 # PulseAPK
 
+<p align="center">
+  🌍 <strong>Languages</strong><br>
+  <a href="README.md">English</a> |
+  <a href="README.de.md">Deutsch</a> |
+  <a href="README.es.md">Español</a> |
+  <a href="README.fr.md">Français</a> |
+  <a href="README.he.md">עברית</a> |
+  <a href="README.ko.md">한국어</a> |
+  <a href="README.be.md">Беларуская</a> |
+  <a href="README.fi.md">Suomi</a> |
+  <a href="README.lv.md">Latviešu</a> |
+  <a href="README.et.md">Eesti</a> |
+  <a href="README.lt.md">Lietuvių</a> |
+  <a href="README.cs.md">Čeština</a> |
+  <a href="README.sk.md">Slovenčina</a> |
+  <a href="README.hu.md">Magyar</a> |
+  <a href="README.ar.md">العربية</a> |
+  <a href="README.pt.md">Português</a> |
+  <a href="README.ru.md">Русский</a> |
+  <a href="README.uk.md">Українська</a> |
+  <a href="README.zh.md">中文</a>
+</p>
+
 **PulseAPK** egy professzionális GUI Android visszafejtéshez és biztonsági elemzéshez, Avalonia (.NET 8)-cal készítve. Ötvözi az `apktool` nyers erejét a fejlett statikus elemzési képességekkel, mindezt egy nagy teljesítményű, cyberpunk ihlette felületen. A PulseAPK leegyszerűsíti a teljes munkafolyamatot a dekompilálástól az elemzésen át az újraépítésig és aláírásig.
 
 [Demo megtekintése YouTube-on](https://youtu.be/Mkdt0c-7Wwg)
 
-![PulseAPK UI](images/pulse_apk_decompile.png)
-
-Az Analysis fülön válaszd ki a dekompilált projektmappát, majd futtasd a Smali elemzést.
-
-![PulseAPK Smali Analysis](images/apktool_analysis.png)
-
-Ha a Smali mappát szeretnéd összeállítani (és szükség esetén aláírni), használd a "Build APK" részt.
-
-![PulseAPK Build APK](images/pulse_apk_build.png)
+A PulseAPK egyablakos munkafolyamatként működik, felül eszköznavigációval: **Decompile**, **Build**, **Analyser**, **Settings** és **About**. Minden szakasz az APK életciklus egy lépésére fókuszál, így dekódolásról elemzésre és aláírásra válthatsz az alkalmazás elhagyása nélkül.
 
 ## Főbb funkciók
 
@@ -44,7 +59,7 @@ A PulseAPK beépített statikus elemzőt tartalmaz, amely a dekompilált kódot 
 1.  **Java Runtime Environment (JRE)**: szükséges az `apktool` használatához. Győződj meg róla, hogy a `java` szerepel a `PATH`-ban.
 2.  **Apktool**: töltsd le az `apktool.jar` fájlt innen: [ibotpeaches.github.io](https://ibotpeaches.github.io/Apktool/).
 3.  **Ubersign (Uber APK Signer)**: szükséges az újraépített APK-k aláírásához. Töltsd le a legújabb `uber-apk-signer.jar` fájlt a [GitHub releases](https://github.com/patrickfav/uber-apk-signer/releases) oldalról.
-4.  **.NET 8.0 Runtime**: szükséges a PulseAPK futtatásához Windows rendszeren.
+4.  **.NET 8.0 Runtime**: szükséges a PulseAPK futtatásához támogatott platformokon (Windows, Linux és macOS).
 
 ## Gyors indítási útmutató
 
@@ -69,6 +84,25 @@ A PulseAPK beépített statikus elemzőt tartalmaz, amely a dekompilált kódot 
     - Szerkeszd a projektmappában lévő fájlokat.
     - A **Build** fülön készíts új APK-t.
     - A **Sign** fülön írd alá a kimeneti APK-t.
+
+
+## Képernyőképek
+
+### 1) Dekompilálási folyamat
+![PulseAPK dekompilálási képernyő](images/pulse_apk_decompile.png)
+- Ezen a képernyőn kiválaszthatod a bemeneti APK-t és a kimeneti mappát, majd elindíthatod a dekompilálást.
+- Egyszerű folyamat: APK kiválasztása -> kimeneti útvonal beállítása -> decompile kattintás.
+
+### 2) Build folyamat
+![PulseAPK build képernyő](images/pulse_apk_build.png)
+- Ezen a képernyőn a dekompilált projektből új APK készül.
+- Egyszerű folyamat: projektmappa kiválasztása -> kimeneti név/útvonal beállítása -> build kattintás (és szükség esetén aláírás bekapcsolása).
+
+### 3) Statikus elemzés eredményei
+![PulseAPK elemzési kimenet](images/pulse_apk_analysis.png)
+- Ez a nézet a Smali/statikus elemzés biztonsági találatait mutatja.
+- Egyszerű folyamat: először dekompilálás -> elemzés fül/kimenet megnyitása -> találatok átnézése és jelentés exportálása.
+
 
 ## Technikai architektúra
 

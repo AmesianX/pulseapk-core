@@ -1,18 +1,33 @@
 # PulseAPK
 
+<p align="center">
+  🌍 <strong>Languages</strong><br>
+  <a href="README.md">English</a> |
+  <a href="README.de.md">Deutsch</a> |
+  <a href="README.es.md">Español</a> |
+  <a href="README.fr.md">Français</a> |
+  <a href="README.he.md">עברית</a> |
+  <a href="README.ko.md">한국어</a> |
+  <a href="README.be.md">Беларуская</a> |
+  <a href="README.fi.md">Suomi</a> |
+  <a href="README.lv.md">Latviešu</a> |
+  <a href="README.et.md">Eesti</a> |
+  <a href="README.lt.md">Lietuvių</a> |
+  <a href="README.cs.md">Čeština</a> |
+  <a href="README.sk.md">Slovenčina</a> |
+  <a href="README.hu.md">Magyar</a> |
+  <a href="README.ar.md">العربية</a> |
+  <a href="README.pt.md">Português</a> |
+  <a href="README.ru.md">Русский</a> |
+  <a href="README.uk.md">Українська</a> |
+  <a href="README.zh.md">中文</a>
+</p>
+
 **PulseAPK** é uma GUI de nível profissional para engenharia reversa e análise de segurança no Android, construída com Avalonia (.NET 8). Ela combina o poder bruto do `apktool` com recursos avançados de análise estática, envoltos em uma interface de alto desempenho com inspiração cyberpunk. O PulseAPK simplifica todo o fluxo de trabalho, da decompilação à análise, reconstrução e assinatura.
 
 [Assista à demo no YouTube](https://youtu.be/Mkdt0c-7Wwg)
 
-![PulseAPK UI](images/pulse_apk_decompile.png)
-
-Use a aba Analysis para selecionar a pasta do projeto decompilado e executar a análise Smali.
-
-![PulseAPK Smali Analysis](images/apktool_analysis.png)
-
-Se você quiser compilar (e assinar, se necessário) a pasta Smali, use a seção "Build APK".
-
-![PulseAPK Build APK](images/pulse_apk_build.png)
+O PulseAPK é organizado em um fluxo de trabalho de janela única com navegação superior para cada ferramenta: **Decompile**, **Build**, **Analyser**, **Settings** e **About**. Cada seção cobre uma etapa do ciclo de vida do APK para que você vá da decodificação à análise e assinatura sem sair do app.
 
 ## Principais recursos
 
@@ -44,7 +59,7 @@ O PulseAPK inclui um analisador estático embutido que varre o código decompila
 1.  **Java Runtime Environment (JRE)**: Necessário para `apktool`. Garanta que `java` esteja no seu `PATH`.
 2.  **Apktool**: Baixe `apktool.jar` em [ibotpeaches.github.io](https://ibotpeaches.github.io/Apktool/).
 3.  **Ubersign (Uber APK Signer)**: Necessário para assinar APKs recompilados. Baixe a versão mais recente de `uber-apk-signer.jar` nos [releases do GitHub](https://github.com/patrickfav/uber-apk-signer/releases).
-4.  **.NET 8.0 Runtime**: Necessário para executar o PulseAPK no Windows.
+4.  **.NET 8.0 Runtime**: Necessário para executar o PulseAPK em plataformas compatíveis (Windows, Linux e macOS).
 
 ## Guia de início rápido
 
@@ -69,6 +84,24 @@ O PulseAPK inclui um analisador estático embutido que varre o código decompila
     - Edite arquivos na pasta do projeto.
     - Use a aba **Build** para recompilar em um novo APK.
     - Use a aba **Sign** para assinar o APK de saída.
+
+
+## Capturas de tela
+
+### 1) Fluxo de decompilação
+![Tela de decompilação do PulseAPK](images/pulse_apk_decompile.png)
+- Esta tela é usada para escolher o APK de entrada e a pasta de saída, e então executar a decompilação.
+- Fluxo simples: selecionar APK -> definir caminho de saída -> clicar em decompile.
+
+### 2) Fluxo de build
+![Tela de build do PulseAPK](images/pulse_apk_build.png)
+- Esta tela é usada para recompilar um projeto decompilado em um novo APK.
+- Fluxo simples: selecionar pasta do projeto -> escolher nome/caminho de saída -> clicar em build (e habilitar assinatura se necessário).
+
+### 3) Resultados da análise estática
+![Saída de análise do PulseAPK](images/pulse_apk_analysis.png)
+- Esta visualização mostra os achados de segurança da análise Smali/estática.
+- Fluxo simples: primeiro decompilar -> abrir aba/saída de análise -> revisar achados e exportar relatório.
 
 ## Arquitetura técnica
 

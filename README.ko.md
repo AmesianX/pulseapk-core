@@ -1,18 +1,33 @@
 # PulseAPK
 
+<p align="center">
+  🌍 <strong>Languages</strong><br>
+  <a href="README.md">English</a> |
+  <a href="README.de.md">Deutsch</a> |
+  <a href="README.es.md">Español</a> |
+  <a href="README.fr.md">Français</a> |
+  <a href="README.he.md">עברית</a> |
+  <a href="README.ko.md">한국어</a> |
+  <a href="README.be.md">Беларуская</a> |
+  <a href="README.fi.md">Suomi</a> |
+  <a href="README.lv.md">Latviešu</a> |
+  <a href="README.et.md">Eesti</a> |
+  <a href="README.lt.md">Lietuvių</a> |
+  <a href="README.cs.md">Čeština</a> |
+  <a href="README.sk.md">Slovenčina</a> |
+  <a href="README.hu.md">Magyar</a> |
+  <a href="README.ar.md">العربية</a> |
+  <a href="README.pt.md">Português</a> |
+  <a href="README.ru.md">Русский</a> |
+  <a href="README.uk.md">Українська</a> |
+  <a href="README.zh.md">中文</a>
+</p>
+
 **PulseAPK**는 Avalonia (.NET 8)로 구축된 Android 리버스 엔지니어링 및 보안 분석용 전문 GUI입니다. `apktool`의 강력함과 고급 정적 분석 기능을 결합해 사이버펑크 스타일의 고성능 인터페이스로 제공합니다. PulseAPK는 디컴파일부터 분석, 재빌드, 서명까지 전체 워크플로를 간소화합니다.
 
 [YouTube 데모 보기](https://youtu.be/Mkdt0c-7Wwg)
 
-![PulseAPK UI](images/pulse_apk_decompile.png)
-
-Analysis 탭에서 디컴파일된 프로젝트 폴더를 선택한 뒤 Smali 분석을 실행하세요.
-
-![PulseAPK Smali Analysis](images/apktool_analysis.png)
-
-Smali 폴더를 빌드(필요 시 서명)하려면 "Build APK" 섹션을 사용하세요.
-
-![PulseAPK Build APK](images/pulse_apk_build.png)
+PulseAPK는 단일 창 워크플로로 구성되어 있으며 상단 탐색에서 각 도구(**Decompile**, **Build**, **Analyser**, **Settings**, **About**)에 접근할 수 있습니다. 각 섹션은 APK 수명 주기의 한 단계를 담당하므로 앱을 벗어나지 않고 디코딩부터 분석, 서명까지 진행할 수 있습니다.
 
 ## 주요 기능
 
@@ -44,7 +59,7 @@ PulseAPK는 디컴파일된 코드를 스캔하여 일반적인 보안 지표를
 1.  **Java Runtime Environment (JRE)**: `apktool`에 필요합니다. `java`가 시스템 `PATH`에 있는지 확인하세요.
 2.  **Apktool**: [ibotpeaches.github.io](https://ibotpeaches.github.io/Apktool/)에서 `apktool.jar`를 다운로드하세요.
 3.  **Ubersign (Uber APK Signer)**: 재빌드된 APK 서명에 필요합니다. [GitHub releases](https://github.com/patrickfav/uber-apk-signer/releases)에서 최신 `uber-apk-signer.jar`를 다운로드하세요.
-4.  **.NET 8.0 Runtime**: Windows에서 PulseAPK를 실행하려면 필요합니다.
+4.  **.NET 8.0 Runtime**: 지원 플랫폼(Windows, Linux, macOS)에서 PulseAPK를 실행하는 데 필요합니다.
 
 ## 빠른 시작 가이드
 
@@ -69,6 +84,25 @@ PulseAPK는 디컴파일된 코드를 스캔하여 일반적인 보안 지표를
     - 프로젝트 폴더의 파일을 편집합니다.
     - **Build** 탭을 사용해 새 APK를 빌드합니다.
     - **Sign** 탭을 사용해 출력 APK를 서명합니다.
+
+
+## 스크린샷
+
+### 1) 디컴파일 워크플로
+![PulseAPK 디컴파일 화면](images/pulse_apk_decompile.png)
+- 이 화면에서 입력 APK와 출력 폴더를 선택한 뒤 디컴파일을 실행합니다.
+- 간단한 흐름: APK 선택 -> 출력 경로 설정 -> decompile 클릭.
+
+### 2) 빌드 워크플로
+![PulseAPK 빌드 화면](images/pulse_apk_build.png)
+- 이 화면에서 디컴파일된 프로젝트를 새로운 APK로 다시 빌드합니다.
+- 간단한 흐름: 프로젝트 폴더 선택 -> 출력 이름/경로 설정 -> build 클릭(필요 시 서명 활성화).
+
+### 3) 정적 분석 결과
+![PulseAPK 분석 출력](images/pulse_apk_analysis.png)
+- 이 화면은 Smali/정적 분석의 보안 탐지 결과를 보여줍니다.
+- 간단한 흐름: 먼저 디컴파일 -> 분석 탭/출력 열기 -> 결과 검토 후 보고서 내보내기.
+
 
 ## 기술 아키텍처
 

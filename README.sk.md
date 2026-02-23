@@ -1,18 +1,33 @@
 # PulseAPK
 
+<p align="center">
+  🌍 <strong>Languages</strong><br>
+  <a href="README.md">English</a> |
+  <a href="README.de.md">Deutsch</a> |
+  <a href="README.es.md">Español</a> |
+  <a href="README.fr.md">Français</a> |
+  <a href="README.he.md">עברית</a> |
+  <a href="README.ko.md">한국어</a> |
+  <a href="README.be.md">Беларуская</a> |
+  <a href="README.fi.md">Suomi</a> |
+  <a href="README.lv.md">Latviešu</a> |
+  <a href="README.et.md">Eesti</a> |
+  <a href="README.lt.md">Lietuvių</a> |
+  <a href="README.cs.md">Čeština</a> |
+  <a href="README.sk.md">Slovenčina</a> |
+  <a href="README.hu.md">Magyar</a> |
+  <a href="README.ar.md">العربية</a> |
+  <a href="README.pt.md">Português</a> |
+  <a href="README.ru.md">Русский</a> |
+  <a href="README.uk.md">Українська</a> |
+  <a href="README.zh.md">中文</a>
+</p>
+
 **PulseAPK** je profesionálne GUI na reverzné inžinierstvo Androidu a bezpečnostnú analýzu, postavené na Avalonia (.NET 8). Spája surovú silu `apktool` s pokročilými možnosťami statickej analýzy v rýchlom, cyberpunkom inšpirovanom rozhraní. PulseAPK zjednodušuje celý pracovný postup od dekompilácie cez analýzu, prestavbu až po podpis.
 
 [Pozrieť demo na YouTube](https://youtu.be/Mkdt0c-7Wwg)
 
-![PulseAPK UI](images/pulse_apk_decompile.png)
-
-Na karte Analysis vyberte priečinok dekompilovaného projektu a spustite Smali analýzu.
-
-![PulseAPK Smali Analysis](images/apktool_analysis.png)
-
-Ak chcete priečinok Smali zostaviť (a v prípade potreby podpísať), použite sekciu "Build APK".
-
-![PulseAPK Build APK](images/pulse_apk_build.png)
+PulseAPK je organizovaný ako workflow v jednom okne s hornou navigáciou pre každý nástroj: **Decompile**, **Build**, **Analyser**, **Settings** a **About**. Každá sekcia pokrýva jednu fázu životného cyklu APK, aby ste mohli prechádzať od dekódovania k analýze a podpisu bez opustenia aplikácie.
 
 ## Kľúčové funkcie
 
@@ -44,7 +59,7 @@ PulseAPK obsahuje vstavaný statický analyzátor, ktorý skenuje dekompilovaný
 1.  **Java Runtime Environment (JRE)**: vyžaduje sa pre `apktool`. Uistite sa, že `java` je v `PATH`.
 2.  **Apktool**: stiahnite `apktool.jar` z [ibotpeaches.github.io](https://ibotpeaches.github.io/Apktool/).
 3.  **Ubersign (Uber APK Signer)**: vyžaduje sa na podpisovanie prestavaných APK. Stiahnite najnovší `uber-apk-signer.jar` z [GitHub releases](https://github.com/patrickfav/uber-apk-signer/releases).
-4.  **.NET 8.0 Runtime**: vyžaduje sa na spustenie PulseAPK vo Windows.
+4.  **.NET 8.0 Runtime**: vyžaduje sa na spustenie PulseAPK na podporovaných platformách (Windows, Linux a macOS).
 
 ## Rýchly štart
 
@@ -69,6 +84,25 @@ PulseAPK obsahuje vstavaný statický analyzátor, ktorý skenuje dekompilovaný
     - Upravte súbory v priečinku projektu.
     - Použite kartu **Build** na zostavenie nového APK.
     - Použite kartu **Sign** na podpis výstupného APK.
+
+
+## Snímky obrazovky
+
+### 1) Workflow dekompilácie
+![Obrazovka dekompilácie PulseAPK](images/pulse_apk_decompile.png)
+- Táto obrazovka slúži na výber vstupného APK a výstupného priečinka a následné spustenie dekompilácie.
+- Jednoduchý postup: vybrať APK -> nastaviť výstupnú cestu -> kliknúť na decompile.
+
+### 2) Workflow zostavenia
+![Obrazovka zostavenia PulseAPK](images/pulse_apk_build.png)
+- Táto obrazovka slúži na prestavbu dekompilovaného projektu do nového APK.
+- Jednoduchý postup: vybrať priečinok projektu -> nastaviť názov/cestu výstupu -> kliknúť na build (a podľa potreby zapnúť podpis).
+
+### 3) Výsledky statickej analýzy
+![Výstup analýzy PulseAPK](images/pulse_apk_analysis.png)
+- Toto zobrazenie ukazuje bezpečnostné nálezy zo Smali/statickej analýzy.
+- Jednoduchý postup: najprv dekompilovať -> otvoriť kartu/výstup analýzy -> skontrolovať nálezy a exportovať report.
+
 
 ## Technická architektúra
 

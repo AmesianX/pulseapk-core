@@ -1,18 +1,33 @@
 # PulseAPK
 
+<p align="center">
+  🌍 <strong>Languages</strong><br>
+  <a href="README.md">English</a> |
+  <a href="README.de.md">Deutsch</a> |
+  <a href="README.es.md">Español</a> |
+  <a href="README.fr.md">Français</a> |
+  <a href="README.he.md">עברית</a> |
+  <a href="README.ko.md">한국어</a> |
+  <a href="README.be.md">Беларуская</a> |
+  <a href="README.fi.md">Suomi</a> |
+  <a href="README.lv.md">Latviešu</a> |
+  <a href="README.et.md">Eesti</a> |
+  <a href="README.lt.md">Lietuvių</a> |
+  <a href="README.cs.md">Čeština</a> |
+  <a href="README.sk.md">Slovenčina</a> |
+  <a href="README.hu.md">Magyar</a> |
+  <a href="README.ar.md">العربية</a> |
+  <a href="README.pt.md">Português</a> |
+  <a href="README.ru.md">Русский</a> |
+  <a href="README.uk.md">Українська</a> |
+  <a href="README.zh.md">中文</a>
+</p>
+
 **PulseAPK** on Androidin käänteismallinnuksen ja turvallisuusanalyysin ammattitason GUI, joka on rakennettu Avalonia (.NET 8):lla. Se yhdistää `apktool`-työkalun raakavoiman edistyneisiin staattisen analyysin ominaisuuksiin ja tarjoaa suorituskykyisen, kyberpunk-henkisen käyttöliittymän. PulseAPK sujuvoittaa koko työnkulun purkamisesta analyysiin, uudelleenrakennukseen ja allekirjoittamiseen.
 
 [Katso demo YouTubessa](https://youtu.be/Mkdt0c-7Wwg)
 
-![PulseAPK UI](images/pulse_apk_decompile.png)
-
-Käytä Analysis-välilehteä valitaksesi dekompiloidun projektikansion ja suorittaaksesi Smali-analyysin.
-
-![PulseAPK Smali Analysis](images/apktool_analysis.png)
-
-Jos haluat rakentaa (ja tarvittaessa allekirjoittaa) Smali-kansion, käytä "Build APK" -osiota.
-
-![PulseAPK Build APK](images/pulse_apk_build.png)
+PulseAPK on järjestetty yhden ikkunan työnkuluksi, jossa on ylävalikossa työkalut: **Decompile**, **Build**, **Analyser**, **Settings** ja **About**. Jokainen osio kattaa APK:n elinkaaren yhden vaiheen, jotta voit siirtyä dekoodauksesta analyysiin ja allekirjoitukseen poistumatta sovelluksesta.
 
 ## Avainominaisuudet
 
@@ -44,7 +59,7 @@ PulseAPK sisältää sisäänrakennetun staattisen analysoijan, joka skannaa pur
 1.  **Java Runtime Environment (JRE)**: vaaditaan `apktool`-työkalulle. Varmista, että `java` on järjestelmän `PATH`-polussa.
 2.  **Apktool**: lataa `apktool.jar` osoitteesta [ibotpeaches.github.io](https://ibotpeaches.github.io/Apktool/).
 3.  **Ubersign (Uber APK Signer)**: vaaditaan uudelleenrakennettujen APK:iden allekirjoittamiseen. Lataa uusin `uber-apk-signer.jar` [GitHub releases](https://github.com/patrickfav/uber-apk-signer/releases) -sivulta.
-4.  **.NET 8.0 Runtime**: vaaditaan PulseAPK:n suorittamiseen Windowsissa.
+4.  **.NET 8.0 Runtime**: vaaditaan PulseAPK:n suorittamiseen tuetuilla alustoilla (Windows, Linux ja macOS).
 
 ## Pika-aloitus
 
@@ -69,6 +84,25 @@ PulseAPK sisältää sisäänrakennetun staattisen analysoijan, joka skannaa pur
     - Muokkaa projektikansion tiedostoja.
     - Käytä **Build**-välilehteä uuden APK:n rakentamiseen.
     - Käytä **Sign**-välilehteä tulos-APK:n allekirjoittamiseen.
+
+
+## Kuvakaappaukset
+
+### 1) Dekompiloinnin työnkulku
+![PulseAPK dekompilointinäkymä](images/pulse_apk_decompile.png)
+- Tässä näkymässä valitset syöte-APK:n ja tuloskansion ja käynnistät dekompiloinnin.
+- Yksinkertainen kulku: valitse APK -> aseta tulospolku -> klikkaa decompile.
+
+### 2) Build-työnkulku
+![PulseAPK build-näkymä](images/pulse_apk_build.png)
+- Tässä näkymässä dekompiloitu projekti rakennetaan uudeksi APK:ksi.
+- Yksinkertainen kulku: valitse projektikansio -> aseta tulosnimi/-polku -> klikkaa build (ja ota allekirjoitus käyttöön tarvittaessa).
+
+### 3) Staattisen analyysin tulokset
+![PulseAPK analyysituloste](images/pulse_apk_analysis.png)
+- Tämä näkymä näyttää Smali-/staattisen analyysin turvallisuushavainnot.
+- Yksinkertainen kulku: dekompiloi ensin -> avaa analyysivälilehti/tuloste -> käy havainnot läpi ja vie raportti.
+
 
 ## Tekninen arkkitehtuuri
 
