@@ -89,18 +89,18 @@ PulseAPK includes a built-in static analyzer that scans decompiled code for comm
 
 ## Screenshots
 
-### 1) Decompile workflow (`pulse_apk_decompile.png`)
+### 1) Decompile workflow
 ![PulseAPK decompile screen](images/pulse_apk_decompile.png)
 - Use this screen to pick an input APK and output folder, then run decompilation.
 - Simple flow: select APK -> set output path -> click decompile.
 
-### 2) Build workflow (`pulse_apk_build.png`)
+### 2) Build workflow
 ![PulseAPK build screen](images/pulse_apk_build.png)
 - Use this screen to rebuild a decompiled project into a new APK.
 - Simple flow: select project folder -> choose output name/path -> click build (and enable signing if needed).
 
-### 3) Static analysis results (`apktool_analysis.png`)
-![Apktool analysis output](images/apktool_analysis.png)
+### 3) Static analysis results
+![Apktool analysis output](images/pulse_apk_analysis.png)
 - This view shows security findings from Smali/static analysis.
 - Simple flow: decompile first -> open analysis tab/output -> review findings and export report.
 
