@@ -11,6 +11,12 @@ namespace PulseAPK.Core.Utils
             return Path.Combine(writableRoot, "decompiled");
         }
 
+        public static string GetDefaultCompiledPath()
+        {
+            var writableRoot = GetWritableAppDataRoot();
+            return Path.Combine(writableRoot, "compiled");
+        }
+
         private static string GetWritableAppDataRoot()
         {
             var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
