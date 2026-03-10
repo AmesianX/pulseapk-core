@@ -29,6 +29,13 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || fail "'$1' is required but was not found in PATH."
 }
 
+is_png_file() {
+  local icon_path="$1"
+  local signature
+  signature="$(head -c 8 "${icon_path}" | xxd -p -c 256)"
+  [[ "${signature}" == "89504e470d0a1a0a" ]]
+}
+
 require_cmd dotnet
 require_cmd appimagetool
 
@@ -82,13 +89,17 @@ Categories=Development;
 Terminal=false
 EOF
 
-if [[ -f "${icon_src}" ]]; then
-  log "Icon found: ${icon_src}"
+if [[ -f "${icon_src}" ]] && is_png_file "${icon_src}"; then
+  log "Icon found and valid PNG: ${icon_src}"
   cp "${icon_src}" "${appdir}/${app_name}.png"
   cp "${icon_src}" "${appdir}/usr/share/icons/hicolor/256x256/apps/${app_name}.png"
   cp "${icon_src}" "${appdir}/.DirIcon"
 else
-  log "Icon not found, generating fallback SVG icon."
+  if [[ -f "${icon_src}" ]]; then
+    log "Icon exists but is not a valid PNG: ${icon_src}. Generating fallback SVG icon."
+  else
+    log "Icon not found, generating fallback SVG icon."
+  fi
 
   cat > "${appdir}/${app_name}.svg" <<'EOF'
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
