@@ -280,16 +280,42 @@ public partial class BuildViewModel : ObservableObject
 
     private string EnsureCompiledDirectory()
     {
-        var compiledDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "compiled");
+        var preferredCompiledDir = PathUtils.GetDefaultCompiledPath();
 
-        if (!Directory.Exists(compiledDir))
+        if (TryEnsureDirectory(preferredCompiledDir, out var ensuredCompiledDir))
         {
-            try { Directory.CreateDirectory(compiledDir); } catch { }
+            return ensuredCompiledDir;
         }
 
-        return compiledDir;
+        var fallbackCompiledDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "compiled");
+        if (TryEnsureDirectory(fallbackCompiledDir, out var ensuredFallbackDir))
+        {
+            return ensuredFallbackDir;
+        }
+
+        return Directory.GetCurrentDirectory();
     }
 
+
+    private static bool TryEnsureDirectory(string path, out string ensuredPath)
+    {
+        ensuredPath = path;
+
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return false;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(path);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
     private string GetApplicationRootPath()
     {
         return string.IsNullOrWhiteSpace(AppDomain.CurrentDomain.BaseDirectory)
