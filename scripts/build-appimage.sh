@@ -14,32 +14,53 @@ publish_dir="${out_root}/publish"
 appdir="${out_root}/AppDir"
 appimage_path="${out_root}/${app_name}-${rid}.AppImage"
 
-if ! command -v dotnet >/dev/null 2>&1; then
-  echo "dotnet is required but was not found in PATH." >&2
-  exit 1
-fi
+icon_src="${repo_root}/Resources/CyberUnpack.png"
 
-if ! command -v appimagetool >/dev/null 2>&1; then
-  echo "appimagetool is required to build an AppImage (https://appimage.github.io/)." >&2
+log() {
+  echo "[build-appimage] $*"
+}
+
+fail() {
+  echo "[build-appimage] ERROR: $*" >&2
   exit 1
-fi
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || fail "'$1' is required but was not found in PATH."
+}
+
+require_cmd dotnet
+require_cmd appimagetool
+
+log "repo_root: ${repo_root}"
+log "project:   ${project_path}"
+log "rid:       ${rid}"
+log "config:    ${config}"
 
 rm -rf "${publish_dir}" "${appdir}"
-mkdir -p "${publish_dir}" "${appdir}/usr/bin" "${appdir}/usr/share/icons/hicolor/256x256/apps"
+mkdir -p \
+  "${publish_dir}" \
+  "${appdir}/usr/bin" \
+  "${appdir}/usr/share/icons/hicolor/256x256/apps"
 
+log "Publishing .NET app..."
 dotnet publish "${project_path}" \
   -c "${config}" \
   -r "${rid}" \
   --self-contained true \
+  /p:PublishSingleFile=false \
   -o "${publish_dir}"
 
+log "Copying publish output into AppDir..."
 cp -a "${publish_dir}/." "${appdir}/usr/bin/"
 
-if [[ ! -x "${appdir}/usr/bin/${entry_exe}" ]]; then
-  echo "Expected executable '${entry_exe}' was not found in ${publish_dir}." >&2
-  exit 1
+if [[ ! -f "${appdir}/usr/bin/${entry_exe}" ]]; then
+  fail "Expected executable '${entry_exe}' was not found in ${publish_dir}."
 fi
 
+chmod +x "${appdir}/usr/bin/${entry_exe}"
+
+log "Creating AppRun..."
 cat > "${appdir}/AppRun" <<'EOF'
 #!/usr/bin/env bash
 set -e
@@ -48,20 +69,37 @@ exec "${here}/usr/bin/PulseAPK.Avalonia" "$@"
 EOF
 chmod +x "${appdir}/AppRun"
 
-cat > "${appdir}/${app_name}.desktop" <<EOF
+log "Preparing desktop entry..."
+desktop_file="${appdir}/${app_name}.desktop"
+
+cat > "${desktop_file}" <<EOF
 [Desktop Entry]
 Type=Application
 Name=${app_name}
 Exec=${entry_exe}
 Icon=${app_name}
-Categories=Development;Utility;
+Categories=Development;
 Terminal=false
 EOF
 
-icon_src="${repo_root}/Resources/CyberUnpack.png"
 if [[ -f "${icon_src}" ]]; then
+  log "Icon found: ${icon_src}"
   cp "${icon_src}" "${appdir}/${app_name}.png"
   cp "${icon_src}" "${appdir}/usr/share/icons/hicolor/256x256/apps/${app_name}.png"
+  cp "${icon_src}" "${appdir}/.DirIcon"
+else
+  log "Icon not found, generating fallback SVG icon."
+
+  cat > "${appdir}/${app_name}.svg" <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="48" fill="#2b2b2b"/>
+  <rect x="36" y="36" width="184" height="184" rx="24" fill="#3a3a3a"/>
+  <path d="M76 88h104v16H76zm0 32h72v16H76zm0 32h104v16H76z" fill="#7dd3fc"/>
+  <path d="M156 124l28 28-28 28" fill="none" stroke="#f59e0b" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+EOF
+
+  cp "${appdir}/${app_name}.svg" "${appdir}/.DirIcon"
 fi
 
 arch="${rid##*-}"
@@ -71,6 +109,7 @@ case "${arch}" in
   *) appimage_arch="${arch}" ;;
 esac
 
+log "Building AppImage for architecture: ${appimage_arch}"
 ARCH="${appimage_arch}" appimagetool "${appdir}" "${appimage_path}"
 
-echo "AppImage created: ${appimage_path}"
+log "AppImage created: ${appimage_path}"
