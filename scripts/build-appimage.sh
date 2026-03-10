@@ -32,7 +32,7 @@ require_cmd() {
 is_png_file() {
   local icon_path="$1"
   local signature
-  signature="$(head -c 8 "${icon_path}" | xxd -p -c 256)"
+  signature="$(od -An -tx1 -N8 "${icon_path}" | tr -d ' \n')"
   [[ "${signature}" == "89504e470d0a1a0a" ]]
 }
 
