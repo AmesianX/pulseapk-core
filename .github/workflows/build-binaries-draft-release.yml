@@ -31,7 +31,7 @@ jobs:
         run: ./scripts/build-appimage.sh
 
       - name: Build Windows binaries
-        run: OUTPUT_EXE_NAME=PulseAPK.exe CREATE_ZIP=false ./scripts/build-windows-exe.sh
+        run: OUTPUT_EXE_NAME=PulseAPK-win-x64.exe CREATE_ZIP=false ./scripts/build-windows-exe.sh
 
       - name: Create draft release with binary assets
         uses: softprops/action-gh-release@v2
@@ -41,4 +41,4 @@ jobs:
           draft: true
           files: |
             artifacts/linux/linux-x64/PulseAPK-linux-x64.AppImage
-            artifacts/windows/win-x64/publish/PulseAPK.exe
+            artifacts/windows/win-x64/publish/PulseAPK-win-x64.exe
