@@ -28,7 +28,7 @@ public sealed class ToolDownloadService : IToolDownloadService
             owner: "iBotPeaches",
             repo: "Apktool",
             artifactFileName: "apktool.jar",
-            assetPredicate: static name => name.Equals("apktool.jar", StringComparison.OrdinalIgnoreCase),
+            assetPredicate: static name => IsApktoolReleaseJarAssetName(name),
             checksumFileName: null,
             checksumAssetPredicate: null,
             checksumValueSelector: null,
@@ -186,6 +186,19 @@ public sealed class ToolDownloadService : IToolDownloadService
         }
 
         return value;
+    }
+
+    private static bool IsApktoolReleaseJarAssetName(string name)
+    {
+        if (!name.EndsWith(".jar", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var baseName = Path.GetFileNameWithoutExtension(name);
+        return baseName.Equals("apktool", StringComparison.OrdinalIgnoreCase)
+            || baseName.StartsWith("apktool_", StringComparison.OrdinalIgnoreCase)
+            || baseName.StartsWith("apktool-", StringComparison.OrdinalIgnoreCase);
     }
 }
 
