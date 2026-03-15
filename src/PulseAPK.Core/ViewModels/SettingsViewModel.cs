@@ -14,6 +14,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IToolRepository _toolRepository;
     private readonly IToolDownloadService _toolDownloadService;
     private readonly LocalizationService _localizationService;
+    private readonly IThemeService _themeService;
 
     [ObservableProperty]
     private string _apktoolPath;
@@ -43,7 +44,8 @@ public partial class SettingsViewModel : ObservableObject
         IDialogService dialogService,
         IToolRepository toolRepository,
         IToolDownloadService toolDownloadService,
-        LocalizationService localizationService)
+        LocalizationService localizationService,
+        IThemeService themeService)
     {
         _settingsService = settingsService;
         _filePickerService = filePickerService;
@@ -51,6 +53,7 @@ public partial class SettingsViewModel : ObservableObject
         _toolRepository = toolRepository;
         _toolDownloadService = toolDownloadService;
         _localizationService = localizationService;
+        _themeService = themeService;
 
         _apktoolPath = _settingsService.Settings.ApktoolPath;
         _ubersignPath = _settingsService.Settings.UbersignPath;
@@ -91,6 +94,7 @@ public partial class SettingsViewModel : ObservableObject
 
         _settingsService.Settings.ThemeMode = value.Key;
         _settingsService.Save();
+        _themeService.ApplyTheme(value.Key);
     }
 
     [RelayCommand]

@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using PulseAPK.Avalonia.Services;
 using PulseAPK.Core.Abstractions;
@@ -29,7 +28,8 @@ public partial class App : Application
         // Initialize settings/localization
         var settingsService = Services.GetRequiredService<ISettingsService>();
         LocalizationService.Instance.Initialize(settingsService);
-        RequestedThemeVariant = ResolveThemeVariant(settingsService.Settings.ThemeMode);
+        var themeService = Services.GetRequiredService<IThemeService>();
+        themeService.ApplyTheme(settingsService.Settings.ThemeMode);
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -57,6 +57,7 @@ public partial class App : Application
         services.AddSingleton<IDialogService, AvaloniaDialogService>();
         services.AddSingleton<IDispatcherService, AvaloniaDispatcherService>();
         services.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
+        services.AddSingleton<IThemeService, AvaloniaThemeService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();
@@ -68,12 +69,5 @@ public partial class App : Application
 
         // Windows
         services.AddTransient<MainWindow>();
-    }
-
-    private static ThemeVariant ResolveThemeVariant(string? themeMode)
-    {
-        return string.Equals(themeMode, "light_mode", StringComparison.OrdinalIgnoreCase)
-            ? ThemeVariant.Light
-            : ThemeVariant.Dark;
     }
 }
