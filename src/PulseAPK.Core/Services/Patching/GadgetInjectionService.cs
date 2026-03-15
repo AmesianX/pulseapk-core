@@ -9,7 +9,7 @@ public sealed class GadgetInjectionService : IGadgetInjectionService
     {
         if (!File.Exists(gadgetSourcePath))
         {
-            return Task.FromResult((false, $"Resolved gadget source '{gadgetSourcePath}' does not exist." as string));
+            return Task.FromResult((false, $"Resolved gadget source '{gadgetSourcePath}' does not exist."));
         }
 
         var libDirectory = Path.Combine(decompiledDirectory, "lib", architecture);

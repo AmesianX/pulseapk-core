@@ -12,7 +12,7 @@ public sealed class ManifestPatchService : IManifestPatchService
     {
         if (!File.Exists(manifestPath))
         {
-            return Task.FromResult((false, "Manifest file was not found." as string));
+            return Task.FromResult((false, "Manifest file was not found."));
         }
 
         var document = new XmlDocument { PreserveWhitespace = true };
@@ -24,7 +24,7 @@ public sealed class ManifestPatchService : IManifestPatchService
         var manifestNode = document.SelectSingleNode("/manifest");
         if (manifestNode is null)
         {
-            return Task.FromResult((false, "Invalid AndroidManifest.xml structure." as string));
+            return Task.FromResult((false, "Invalid AndroidManifest.xml structure."));
         }
 
         if (request.EnsureInternetPermission)
