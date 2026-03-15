@@ -10,7 +10,7 @@ public sealed class SmaliPatchService : ISmaliPatchService
         var smaliFile = ResolveActivitySmaliFile(decompiledDirectory, activityName);
         if (smaliFile is null)
         {
-            return Task.FromResult((false, $"Could not locate smali file for activity '{activityName}'." as string));
+            return Task.FromResult((false, $"Could not locate smali file for activity '{activityName}'."));
         }
 
         var originalContent = File.ReadAllText(smaliFile);
@@ -23,7 +23,7 @@ public sealed class SmaliPatchService : ISmaliPatchService
         var classDescriptor = ExtractClassDescriptor(originalContent);
         if (string.IsNullOrWhiteSpace(classDescriptor))
         {
-            return Task.FromResult((false, "Unable to determine class descriptor from smali file." as string));
+            return Task.FromResult((false, "Unable to determine class descriptor from smali file."));
         }
 
         var methodBody = useDelayedLoad
@@ -56,7 +56,7 @@ public sealed class SmaliPatchService : ISmaliPatchService
 
         if (ReferenceEquals(patched, originalContent) || patched == originalContent)
         {
-            return Task.FromResult((false, "Unable to find an injection point in activity smali file." as string));
+            return Task.FromResult((false, "Unable to find an injection point in activity smali file."));
         }
 
         File.WriteAllText(smaliFile, patched);

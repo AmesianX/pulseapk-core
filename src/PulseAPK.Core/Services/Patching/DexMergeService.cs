@@ -9,7 +9,7 @@ public sealed class DexMergeService : IDexMergeService
     {
         if (!File.Exists(originalApkPath) || !File.Exists(rebuiltApkPath))
         {
-            return Task.FromResult((false, "Original or rebuilt APK path does not exist." as string));
+            return Task.FromResult((false, "Original or rebuilt APK path does not exist."));
         }
 
         using var original = ZipFile.OpenRead(originalApkPath);

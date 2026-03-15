@@ -13,7 +13,7 @@ public partial class MainViewModel : ObservableObject
     private readonly LocalizationService _localizationService;
 
     [ObservableProperty]
-    private object _currentView;
+    private object _currentView = null!;
 
     [ObservableProperty]
     private string _windowTitle = Properties.Resources.AppTitle;
