@@ -15,7 +15,7 @@ public sealed class ArchitectureDetectionService : IArchitectureDetectionService
     {
         if (!string.IsNullOrWhiteSpace(request.SelectedArchitecture))
         {
-            return Task.FromResult(SupportedArchitectures.Contains(request.SelectedArchitecture)
+            return Task.FromResult<(string?, string?, string?)>(SupportedArchitectures.Contains(request.SelectedArchitecture)
                 ? (request.SelectedArchitecture, null, null)
                 : (null, $"Unsupported architecture: {request.SelectedArchitecture}", null));
         }
