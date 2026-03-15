@@ -26,8 +26,16 @@ public partial class SettingsViewModel : ObservableObject
     
     [ObservableProperty]
     private LanguageItem _selectedLanguage;
+
+    [ObservableProperty]
+    private ThemeModeItem _selectedThemeMode;
     
     public List<LanguageItem> AvailableLanguages => _localizationService.AvailableLanguages;
+    public List<ThemeModeItem> AvailableThemeModes { get; } =
+    [
+        new("dark_mode", "Dark mode"),
+        new("light_mode", "Light mode")
+    ];
 
     public SettingsViewModel(
         ISettingsService settingsService,
@@ -47,6 +55,7 @@ public partial class SettingsViewModel : ObservableObject
         _apktoolPath = _settingsService.Settings.ApktoolPath;
         _ubersignPath = _settingsService.Settings.UbersignPath;
         _selectedLanguage = _localizationService.CurrentLanguage;
+        _selectedThemeMode = ResolveThemeMode(_settingsService.Settings.ThemeMode);
 
         NormalizeManagedToolPathsIfMissing();
     }
@@ -71,6 +80,17 @@ public partial class SettingsViewModel : ObservableObject
             _settingsService.Settings.SelectedLanguage = value.Code;
             _settingsService.Save();
         }
+    }
+
+    partial void OnSelectedThemeModeChanged(ThemeModeItem value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        _settingsService.Settings.ThemeMode = value.Key;
+        _settingsService.Save();
     }
 
     [RelayCommand]
@@ -183,4 +203,13 @@ public partial class SettingsViewModel : ObservableObject
 
         return normalizedConfiguredPath.StartsWith(normalizedToolFolder, StringComparison.OrdinalIgnoreCase);
     }
+
+    private ThemeModeItem ResolveThemeMode(string? themeMode)
+    {
+        return AvailableThemeModes.FirstOrDefault(mode =>
+                   string.Equals(mode.Key, themeMode, StringComparison.OrdinalIgnoreCase))
+               ?? AvailableThemeModes[0];
+    }
 }
+
+public sealed record ThemeModeItem(string Key, string Name);
