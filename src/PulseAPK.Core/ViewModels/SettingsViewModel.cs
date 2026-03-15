@@ -6,7 +6,7 @@ using Properties = PulseAPK.Core.Properties;
 
 namespace PulseAPK.Core.ViewModels;
 
-public partial class SettingsViewModel : ObservableObject
+public partial class SettingsViewModel : ObservableObject, IDisposable
 {
     private readonly ISettingsService _settingsService;
     private readonly IFilePickerService _filePickerService;
@@ -14,6 +14,8 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IToolRepository _toolRepository;
     private readonly IToolDownloadService _toolDownloadService;
     private readonly LocalizationService _localizationService;
+    private readonly IThemeService _themeService;
+    private bool _disposed;
 
     [ObservableProperty]
     private string _apktoolPath;
@@ -26,8 +28,18 @@ public partial class SettingsViewModel : ObservableObject
     
     [ObservableProperty]
     private LanguageItem _selectedLanguage;
+
+    [ObservableProperty]
+    private ThemeModeItem _selectedThemeMode;
     
     public List<LanguageItem> AvailableLanguages => _localizationService.AvailableLanguages;
+    private List<ThemeModeItem> _availableThemeModes = [];
+
+    public List<ThemeModeItem> AvailableThemeModes
+    {
+        get => _availableThemeModes;
+        private set => SetProperty(ref _availableThemeModes, value);
+    }
 
     public SettingsViewModel(
         ISettingsService settingsService,
@@ -35,7 +47,8 @@ public partial class SettingsViewModel : ObservableObject
         IDialogService dialogService,
         IToolRepository toolRepository,
         IToolDownloadService toolDownloadService,
-        LocalizationService localizationService)
+        LocalizationService localizationService,
+        IThemeService themeService)
     {
         _settingsService = settingsService;
         _filePickerService = filePickerService;
@@ -43,10 +56,14 @@ public partial class SettingsViewModel : ObservableObject
         _toolRepository = toolRepository;
         _toolDownloadService = toolDownloadService;
         _localizationService = localizationService;
+        _themeService = themeService;
 
         _apktoolPath = _settingsService.Settings.ApktoolPath;
         _ubersignPath = _settingsService.Settings.UbersignPath;
         _selectedLanguage = _localizationService.CurrentLanguage;
+
+        RefreshThemeModes(_settingsService.Settings.ThemeMode);
+        _localizationService.PropertyChanged += OnLocalizationChanged;
 
         NormalizeManagedToolPathsIfMissing();
     }
@@ -71,6 +88,18 @@ public partial class SettingsViewModel : ObservableObject
             _settingsService.Settings.SelectedLanguage = value.Code;
             _settingsService.Save();
         }
+    }
+
+    partial void OnSelectedThemeModeChanged(ThemeModeItem value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        _settingsService.Settings.ThemeMode = value.Key;
+        _settingsService.Save();
+        _themeService.ApplyTheme(value.Key);
     }
 
     [RelayCommand]
@@ -99,7 +128,7 @@ public partial class SettingsViewModel : ObservableObject
         await DownloadToolAsync(
             () => _toolDownloadService.DownloadApktoolAsync(),
             path => ApktoolPath = path,
-            Properties.Resources.ResourceManager.GetString("DownloadApktoolButton") ?? Properties.Resources.DownloadApktool);
+            Properties.Resources.ResourceManager.GetString("ToolNameApktool") ?? "Apktool");
     }
 
     [RelayCommand]
@@ -108,7 +137,7 @@ public partial class SettingsViewModel : ObservableObject
         await DownloadToolAsync(
             () => _toolDownloadService.DownloadUbersignerAsync(),
             path => UbersignPath = path,
-            Properties.Resources.ResourceManager.GetString("DownloadUbersignerButton") ?? "Ubersigner");
+            Properties.Resources.ResourceManager.GetString("ToolNameUbersigner") ?? "Ubersigner");
     }
 
     private async Task DownloadToolAsync(
@@ -129,7 +158,9 @@ public partial class SettingsViewModel : ObservableObject
 
             if (result.Downloaded)
             {
-                await _dialogService.ShowInfoAsync($"{toolDisplayName} downloaded successfully.", Properties.Resources.SettingsHeader);
+                var successTemplate = Properties.Resources.ResourceManager.GetString("ToolDownloadedSuccessfullyMessage")
+                    ?? "{0} downloaded successfully.";
+                await _dialogService.ShowInfoAsync(string.Format(successTemplate, toolDisplayName), Properties.Resources.SettingsHeader);
             }
         }
         catch (Exception ex)
@@ -183,4 +214,44 @@ public partial class SettingsViewModel : ObservableObject
 
         return normalizedConfiguredPath.StartsWith(normalizedToolFolder, StringComparison.OrdinalIgnoreCase);
     }
+
+
+    private void OnLocalizationChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == "Item[]" || e.PropertyName == string.Empty)
+        {
+            RefreshThemeModes(SelectedThemeMode?.Key);
+        }
+    }
+
+    private void RefreshThemeModes(string? selectedThemeKey)
+    {
+        AvailableThemeModes =
+        [
+            new ThemeModeItem("dark_mode", _localizationService["ThemeModeDark"]),
+            new ThemeModeItem("light_mode", _localizationService["ThemeModeLight"])
+        ];
+
+        SelectedThemeMode = ResolveThemeMode(selectedThemeKey);
+    }
+
+    private ThemeModeItem ResolveThemeMode(string? themeMode)
+    {
+        return AvailableThemeModes.FirstOrDefault(mode =>
+                   string.Equals(mode.Key, themeMode, StringComparison.OrdinalIgnoreCase))
+               ?? AvailableThemeModes[0];
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _localizationService.PropertyChanged -= OnLocalizationChanged;
+        _disposed = true;
+    }
 }
+
+public sealed record ThemeModeItem(string Key, string Name);

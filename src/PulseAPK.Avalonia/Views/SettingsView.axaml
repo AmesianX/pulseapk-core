@@ -21,6 +21,18 @@
             </ComboBox.ItemTemplate>
         </ComboBox>
 
+        <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ThemeLabel]}"
+                   FontWeight="SemiBold" />
+        <ComboBox ItemsSource="{Binding AvailableThemeModes}"
+                  SelectedItem="{Binding SelectedThemeMode}"
+                  Width="260">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
         <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ApktoolPath]}"
                    FontWeight="SemiBold" />
         <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">

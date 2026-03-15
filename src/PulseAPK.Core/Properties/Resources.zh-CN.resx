@@ -280,6 +280,15 @@
   <data name="DownloadUbersignerButton" xml:space="preserve">
     <value>下载 Ubersigner</value>
   </data>
+  <data name="ToolNameApktool" xml:space="preserve">
+    <value>Apktool</value>
+  </data>
+  <data name="ToolNameUbersigner" xml:space="preserve">
+    <value>Ubersigner</value>
+  </data>
+  <data name="ToolDownloadedSuccessfullyMessage" xml:space="preserve">
+    <value>{0} 下载成功。</value>
+  </data>
   <data name="LanguageLabel" xml:space="preserve">
     <value>语言</value>
   </data>
@@ -306,5 +315,14 @@
   </data>
   <data name="BrowseProjectFolderTip" xml:space="preserve">
     <value>提示：点击“浏览”以选择项目文件夹。</value>
+  </data>
+  <data name="ThemeLabel" xml:space="preserve">
+    <value>主题</value>
+  </data>
+  <data name="ThemeModeDark" xml:space="preserve">
+    <value>深色模式</value>
+  </data>
+  <data name="ThemeModeLight" xml:space="preserve">
+    <value>浅色模式</value>
   </data>
 </root>

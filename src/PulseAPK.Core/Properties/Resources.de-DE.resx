@@ -280,6 +280,15 @@
   <data name="DownloadUbersignerButton" xml:space="preserve">
     <value>Ubersigner herunterladen</value>
   </data>
+  <data name="ToolNameApktool" xml:space="preserve">
+    <value>Apktool</value>
+  </data>
+  <data name="ToolNameUbersigner" xml:space="preserve">
+    <value>Ubersigner</value>
+  </data>
+  <data name="ToolDownloadedSuccessfullyMessage" xml:space="preserve">
+    <value>{0} erfolgreich heruntergeladen.</value>
+  </data>
   <data name="LanguageLabel" xml:space="preserve">
     <value>Sprache</value>
   </data>
@@ -306,5 +315,14 @@
   </data>
   <data name="BrowseProjectFolderTip" xml:space="preserve">
     <value>Tipp: Klicken Sie auf „Durchsuchen“, um einen Projektordner auszuwählen.</value>
+  </data>
+  <data name="ThemeLabel" xml:space="preserve">
+    <value>Thema</value>
+  </data>
+  <data name="ThemeModeDark" xml:space="preserve">
+    <value>Dunkler Modus</value>
+  </data>
+  <data name="ThemeModeLight" xml:space="preserve">
+    <value>Heller Modus</value>
   </data>
 </root>

@@ -1,14 +1,12 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using PulseAPK.Avalonia.Services;
 using PulseAPK.Core.Abstractions;
 using PulseAPK.Core.Services;
 using PulseAPK.Core.ViewModels;
 using System;
-using System.Runtime.InteropServices;
 
 namespace PulseAPK.Avalonia;
 
@@ -30,13 +28,8 @@ public partial class App : Application
         // Initialize settings/localization
         var settingsService = Services.GetRequiredService<ISettingsService>();
         LocalizationService.Instance.Initialize(settingsService);
-
-        // The app layout uses a dark visual palette; force dark mode on Windows to
-        // avoid low-contrast dark text when the OS is set to light mode.
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            RequestedThemeVariant = ThemeVariant.Dark;
-        }
+        var themeService = Services.GetRequiredService<IThemeService>();
+        themeService.ApplyTheme(settingsService.Settings.ThemeMode);
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -64,6 +57,7 @@ public partial class App : Application
         services.AddSingleton<IDialogService, AvaloniaDialogService>();
         services.AddSingleton<IDispatcherService, AvaloniaDispatcherService>();
         services.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
+        services.AddSingleton<IThemeService, AvaloniaThemeService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();

@@ -31,12 +31,12 @@
 
     <Grid ColumnDefinitions="220, *">
         <!-- Sidebar -->
-        <Border Grid.Column="0" Background="#202020" Padding="16">
+        <Border Grid.Column="0" Background="{DynamicResource SidebarBackgroundBrush}" Padding="16">
             <StackPanel Spacing="10">
                 <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[AppTitle]}"
                            FontSize="20"
                            FontWeight="Bold"
-                           Foreground="Cyan"
+                           Foreground="{DynamicResource SystemAccentColor}"
                            HorizontalAlignment="Center"
                            Margin="0,0,0,20"/>
                 
@@ -59,7 +59,7 @@
         </Border>
 
         <!-- Content -->
-        <Border Grid.Column="1" Background="#121212" Padding="20">
+        <Border Grid.Column="1" Background="{DynamicResource MainBackgroundBrush}" Padding="20">
             <ContentControl Content="{Binding CurrentView}"/>
         </Border>
     </Grid>
