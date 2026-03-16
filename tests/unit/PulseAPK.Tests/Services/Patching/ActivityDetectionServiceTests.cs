@@ -51,6 +51,68 @@ public class ActivityDetectionServiceTests
         Assert.Null(result.Error);
     }
 
+
+    [Fact]
+    public async Task DetectMainActivityAsync_ConcreteLauncherWithDotPrefixedName_ReturnsFullyQualifiedActivity()
+    {
+        var root = CreateManifest(@"<manifest xmlns:android='http://schemas.android.com/apk/res/android' package='com.example'>
+  <application>
+    <activity android:name='.MainActivity'>
+      <intent-filter>
+        <action android:name='android.intent.action.MAIN' />
+        <category android:name='android.intent.category.LAUNCHER' />
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>");
+
+        var service = new ActivityDetectionService();
+        var result = await service.DetectMainActivityAsync(root);
+
+        Assert.Equal("com.example.MainActivity", result.ActivityName);
+        Assert.Null(result.Warning);
+        Assert.Null(result.Error);
+    }
+
+    [Fact]
+    public async Task DetectMainActivityAsync_ConcreteLauncherWithShortName_ReturnsFullyQualifiedActivity()
+    {
+        var root = CreateManifest(@"<manifest xmlns:android='http://schemas.android.com/apk/res/android' package='com.example'>
+  <application>
+    <activity android:name='MainActivity'>
+      <intent-filter>
+        <action android:name='android.intent.action.MAIN' />
+        <category android:name='android.intent.category.LAUNCHER' />
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>");
+
+        var service = new ActivityDetectionService();
+        var result = await service.DetectMainActivityAsync(root);
+
+        Assert.Equal("com.example.MainActivity", result.ActivityName);
+        Assert.Null(result.Warning);
+        Assert.Null(result.Error);
+    }
+
+    [Fact]
+    public async Task DetectMainActivityAsync_NoLauncherFallbackWithShortName_ReturnsFullyQualifiedActivity()
+    {
+        var root = CreateManifest(@"<manifest xmlns:android='http://schemas.android.com/apk/res/android' package='com.example'>
+  <application>
+    <activity android:name='MainActivity' />
+    <activity android:name='SecondActivity' />
+  </application>
+</manifest>");
+
+        var service = new ActivityDetectionService();
+        var result = await service.DetectMainActivityAsync(root);
+
+        Assert.Equal("com.example.MainActivity", result.ActivityName);
+        Assert.Equal("No MAIN/LAUNCHER activity found. Falling back to first activity in manifest.", result.Warning);
+        Assert.Null(result.Error);
+    }
     [Fact]
     public async Task DetectMainActivityAsync_PrefersMainLauncherActivity_WhenLauncherIsConcreteActivity()
     {
