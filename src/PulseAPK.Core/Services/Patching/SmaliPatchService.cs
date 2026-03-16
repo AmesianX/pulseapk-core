@@ -85,7 +85,21 @@ public sealed class SmaliPatchService : ISmaliPatchService
 
     private static string? ResolveActivitySmaliFile(string decompiledDirectory, string activityName)
     {
-        var relativePath = activityName.TrimStart('.').Replace('.', Path.DirectorySeparatorChar) + ".smali";
+        if (string.IsNullOrWhiteSpace(activityName))
+        {
+            return null;
+        }
+
+        var normalizedActivityName = activityName.Trim();
+        var relativePath = normalizedActivityName.TrimStart('.').Replace('.', Path.DirectorySeparatorChar) + ".smali";
+        var fallbackFileName = normalizedActivityName.TrimStart('.');
+        if (fallbackFileName.Contains(Path.DirectorySeparatorChar) || fallbackFileName.Contains(Path.AltDirectorySeparatorChar))
+        {
+            fallbackFileName = Path.GetFileName(fallbackFileName);
+        }
+
+        fallbackFileName += ".smali";
+
         foreach (var smaliRoot in Directory.EnumerateDirectories(decompiledDirectory, "smali*", SearchOption.TopDirectoryOnly))
         {
             var direct = Path.Combine(smaliRoot, relativePath);
@@ -99,6 +113,18 @@ public sealed class SmaliPatchService : ISmaliPatchService
             if (match is not null)
             {
                 return match;
+            }
+
+            if (fallbackFileName.Contains(Path.DirectorySeparatorChar) || fallbackFileName.Contains(Path.AltDirectorySeparatorChar))
+            {
+                continue;
+            }
+
+            var fallbackMatch = Directory.EnumerateFiles(smaliRoot, fallbackFileName, SearchOption.AllDirectories)
+                .FirstOrDefault();
+            if (fallbackMatch is not null)
+            {
+                return fallbackMatch;
             }
         }
 

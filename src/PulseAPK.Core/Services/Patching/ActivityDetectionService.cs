@@ -59,21 +59,29 @@ public sealed class ActivityDetectionService : IActivityDetectionService
                 }
 
                 var fallbackActivityName = (string?)activities.FirstOrDefault()?.Attribute(androidNs + "name");
-                if (!string.IsNullOrWhiteSpace(fallbackActivityName))
+                var resolvedFallback = ResolveActivityName(fallbackActivityName, packageName);
+                if (!string.IsNullOrWhiteSpace(resolvedFallback))
                 {
-                    return Task.FromResult<(string?, string?, string?)>((fallbackActivityName, "Launcher activity alias has missing or invalid targetActivity. Falling back to first concrete activity in manifest.", null));
+                    return Task.FromResult<(string?, string?, string?)>((resolvedFallback, "Launcher activity alias has missing or invalid targetActivity. Falling back to first concrete activity in manifest.", null));
                 }
 
                 return Task.FromResult<(string?, string?, string?)>((null, null, "Launcher activity alias has missing or invalid targetActivity, and no concrete activity entries were found in AndroidManifest.xml."));
             }
 
-            return Task.FromResult<(string?, string?, string?)>(((string?)withLauncher.Attribute(androidNs + "name"), null, null));
+            var resolvedLauncher = ResolveActivityName((string?)withLauncher.Attribute(androidNs + "name"), packageName);
+            if (!string.IsNullOrWhiteSpace(resolvedLauncher))
+            {
+                return Task.FromResult<(string?, string?, string?)>((resolvedLauncher, null, null));
+            }
+
+            return Task.FromResult<(string?, string?, string?)>((null, null, "Launcher activity is missing a valid android:name value in AndroidManifest.xml."));
         }
 
         var firstActivityName = (string?)activities.FirstOrDefault()?.Attribute(androidNs + "name");
-        if (!string.IsNullOrWhiteSpace(firstActivityName))
+        var resolvedFirstActivity = ResolveActivityName(firstActivityName, packageName);
+        if (!string.IsNullOrWhiteSpace(resolvedFirstActivity))
         {
-            return Task.FromResult<(string?, string?, string?)>((firstActivityName, "No MAIN/LAUNCHER activity found. Falling back to first activity in manifest.", null));
+            return Task.FromResult<(string?, string?, string?)>((resolvedFirstActivity, "No MAIN/LAUNCHER activity found. Falling back to first activity in manifest.", null));
         }
 
         return Task.FromResult<(string?, string?, string?)>((null, null, "No activity entries found in AndroidManifest.xml."));
