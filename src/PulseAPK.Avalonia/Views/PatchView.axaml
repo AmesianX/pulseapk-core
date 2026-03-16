@@ -60,6 +60,22 @@
                           IsChecked="{Binding DecodeSources}" />
                 <CheckBox Content="Use AAPT2 for build"
                           IsChecked="{Binding UseAapt2ForBuild}" />
+
+                <TextBlock Text="DEX preservation mode"
+                           FontWeight="SemiBold"
+                           Margin="0,8,0,0" />
+                <ComboBox ItemsSource="{Binding DexPreservationOptions}"
+                          SelectedItem="{Binding SelectedDexPreservationOption}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Text="Disabled: no dex copy. Preserve unmodified secondary dex: keeps additional original classes*.dex not produced during rebuild. Replace all dex (dangerous): restores every original dex and may discard injected smali changes."
+                           TextWrapping="Wrap"
+                           FontSize="12"
+                           Opacity="0.75" />
             </StackPanel>
             <StackPanel Grid.Column="1" Spacing="8">
                 <TextBlock Text="Output"

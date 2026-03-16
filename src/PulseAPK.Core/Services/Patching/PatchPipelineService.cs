@@ -160,30 +160,39 @@ public sealed class PatchPipelineService : IPatchPipelineService
 
             result.StageSummaries.Add(new PatchStageSummary("build", true, "APK rebuilt successfully."));
 
-            if (request.PreserveOriginalDexFiles)
+            var dexMode = request.DexPreservationMode;
+            if (dexMode == DexPreservationMode.Disabled && request.PreserveOriginalDexFiles)
             {
-                if (smaliInjectionApplied)
-                {
-                    const string skipMessage = "Dex preservation skipped because smali injection modified classes.dex; raw original-dex replacement would discard injected changes.";
-                    result.Warnings.Add(skipMessage);
-                    result.StageSummaries.Add(new PatchStageSummary("dex-preservation", true, skipMessage));
-                }
-                else
-                {
-                    var dexResult = await _dexMergeService.PreserveOriginalDexFilesAsync(
-                        request.InputApkPath,
-                        request.OutputApkPath,
-                        DexPreservationMode.PreserveUnmodifiedSecondaryDexFiles,
-                        cancellationToken);
-                    if (!dexResult.Success)
-                    {
-                        result.Errors.Add(dexResult.Error ?? "DEX merge failed.");
-                        result.StageSummaries.Add(new PatchStageSummary("dex-preservation", false, result.Errors.Last()));
-                        return result;
-                    }
+                // Backward compatibility for callers still setting PreserveOriginalDexFiles.
+                dexMode = DexPreservationMode.PreserveUnmodifiedSecondaryDexFiles;
+            }
 
-                    result.StageSummaries.Add(new PatchStageSummary("dex-preservation", true, "Original non-modified secondary dex files preserved."));
+            if (dexMode != DexPreservationMode.Disabled)
+            {
+                if (dexMode == DexPreservationMode.ReplaceAllDexFiles && smaliInjectionApplied && !request.ConfirmDangerousDexReplacement)
+                {
+                    const string dangerousModeError = "Dex replacement mode 'replace all dex' is blocked because smali injection was applied. Confirm dangerous mode explicitly to continue; replacing all dex may discard injected smali changes.";
+                    result.Errors.Add(dangerousModeError);
+                    result.StageSummaries.Add(new PatchStageSummary("dex-preservation", false, dangerousModeError));
+                    return result;
                 }
+
+                var dexResult = await _dexMergeService.PreserveOriginalDexFilesAsync(
+                    request.InputApkPath,
+                    request.OutputApkPath,
+                    dexMode,
+                    cancellationToken);
+                if (!dexResult.Success)
+                {
+                    result.Errors.Add(dexResult.Error ?? "DEX merge failed.");
+                    result.StageSummaries.Add(new PatchStageSummary("dex-preservation", false, result.Errors.Last()));
+                    return result;
+                }
+
+                var dexMessage = dexMode == DexPreservationMode.ReplaceAllDexFiles
+                    ? "All dex files were replaced from the original APK (dangerous mode)."
+                    : "Original non-modified secondary dex files preserved.";
+                result.StageSummaries.Add(new PatchStageSummary("dex-preservation", true, dexMessage));
             }
 
             if (request.SignOutput)

@@ -10,6 +10,9 @@ using Properties = PulseAPK.Core.Properties;
 
 namespace PulseAPK.Core.ViewModels;
 
+
+public sealed record DexPreservationOption(string Label, DexPreservationMode Mode);
+
 public partial class PatchViewModel : ObservableObject
 {
     [ObservableProperty]
@@ -38,6 +41,9 @@ public partial class PatchViewModel : ObservableObject
     private bool _useAapt2ForBuild;
 
     [ObservableProperty]
+    private DexPreservationOption _selectedDexPreservationOption = new("Disabled (default)", DexPreservationMode.Disabled);
+
+    [ObservableProperty]
     private string _consoleLog;
 
     [ObservableProperty]
@@ -51,6 +57,13 @@ public partial class PatchViewModel : ObservableObject
 
     public bool IsHintVisible => string.IsNullOrWhiteSpace(ApkPath);
 
+    public IReadOnlyList<DexPreservationOption> DexPreservationOptions { get; } =
+    [
+        new("Disabled (default)", DexPreservationMode.Disabled),
+        new("Preserve unmodified secondary dex", DexPreservationMode.PreserveUnmodifiedSecondaryDexFiles),
+        new("Replace all dex (dangerous)", DexPreservationMode.ReplaceAllDexFiles)
+    ];
+
     public PatchViewModel(
         IFilePickerService filePickerService,
         ISettingsService settingsService,
@@ -63,6 +76,8 @@ public partial class PatchViewModel : ObservableObject
         _dialogService = dialogService;
 
         _consoleLog = Properties.Resources.WaitingForCommand;
+
+        SelectedDexPreservationOption = DexPreservationOptions[0];
 
         OutputFolderPath = EnsureCompiledDirectory();
         OutputApkName = "patched.apk";
@@ -98,6 +113,7 @@ public partial class PatchViewModel : ObservableObject
     partial void OnDecodeResourcesChanged(bool value) => UpdateCommandPreview();
     partial void OnDecodeSourcesChanged(bool value) => UpdateCommandPreview();
     partial void OnUseAapt2ForBuildChanged(bool value) => UpdateCommandPreview();
+    partial void OnSelectedDexPreservationOptionChanged(DexPreservationOption value) => UpdateCommandPreview();
 
     [RelayCommand]
     private async Task BrowseApk()
@@ -144,6 +160,20 @@ public partial class PatchViewModel : ObservableObject
             return;
         }
 
+        var selectedDexMode = SelectedDexPreservationOption.Mode;
+        var confirmedDangerousDexMode = false;
+        if (selectedDexMode == DexPreservationMode.ReplaceAllDexFiles)
+        {
+            confirmedDangerousDexMode = await _dialogService.ShowQuestionAsync(
+                "Replace all dex can discard injected smali changes. Continue only if you understand this risk.",
+                "Dangerous dex replacement");
+            if (!confirmedDangerousDexMode)
+            {
+                AppendLog("[WARN] Dangerous dex replacement was cancelled by user.");
+                return;
+            }
+        }
+
         IsRunning = true;
         SetConsoleLog("Starting patch pipeline...");
 
@@ -159,7 +189,9 @@ public partial class PatchViewModel : ObservableObject
                 UseAapt2ForBuild = UseAapt2ForBuild,
                 WorkingDirectory = Path.Combine(Path.GetTempPath(), "pulseapk-patch-ui"),
                 KeepIntermediateFiles = false,
-                PreserveOriginalDexFiles = false
+                PreserveOriginalDexFiles = false,
+                DexPreservationMode = selectedDexMode,
+                ConfirmDangerousDexReplacement = confirmedDangerousDexMode
             };
 
             AppendLog(BuildRunSummary(request));
@@ -270,12 +302,13 @@ public partial class PatchViewModel : ObservableObject
         builder.AppendLine($"Decode resources: {DecodeResources}");
         builder.AppendLine($"Decode sources: {DecodeSources}");
         builder.AppendLine($"Use AAPT2: {UseAapt2ForBuild}");
+        builder.AppendLine($"Dex preservation: {SelectedDexPreservationOption.Label}");
         builder.Append($"Sign output: {SignApk}");
         ConsoleLog = builder.ToString();
     }
 
     private static string BuildRunSummary(PatchRequest request)
     {
-        return $"Patching '{request.InputApkPath}' -> '{request.OutputApkPath}' (sign={request.SignOutput}, decodeRes={request.DecodeResources}, decodeSrc={request.DecodeSources}, aapt2={request.UseAapt2ForBuild})";
+        return $"Patching '{request.InputApkPath}' -> '{request.OutputApkPath}' (sign={request.SignOutput}, decodeRes={request.DecodeResources}, decodeSrc={request.DecodeSources}, aapt2={request.UseAapt2ForBuild}, dexMode={request.DexPreservationMode})";
     }
 }

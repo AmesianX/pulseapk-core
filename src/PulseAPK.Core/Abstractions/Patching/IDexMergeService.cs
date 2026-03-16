@@ -2,6 +2,7 @@ namespace PulseAPK.Core.Abstractions.Patching;
 
 public enum DexPreservationMode
 {
+    Disabled,
     ReplaceAllDexFiles,
     PreserveUnmodifiedSecondaryDexFiles
 }
