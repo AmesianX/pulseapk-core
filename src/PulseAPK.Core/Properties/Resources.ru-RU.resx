@@ -317,10 +317,10 @@
     <value>Подсказка: нажмите «Обзор», чтобы выбрать папку проекта.</value>
   </data>
   <data name="MenuPatch" xml:space="preserve">
-    <value>Патч APK</value>
+    <value>Пропатчить APK</value>
   </data>
   <data name="PatchHeader" xml:space="preserve">
-    <value>Патч APK</value>
+    <value>Пропатчить APK</value>
   </data>
   <data name="PatchSignOutputApk" xml:space="preserve">
     <value>Подписывать выходной APK (ubersigner)</value>
