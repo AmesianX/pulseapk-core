@@ -1,3 +1,5 @@
+using PulseAPK.Core.Abstractions.Patching;
+
 namespace PulseAPK.Core.Models;
 
 public sealed record PatchRequest
@@ -12,6 +14,8 @@ public sealed record PatchRequest
     public string? WorkingDirectory { get; init; }
     public bool KeepIntermediateFiles { get; init; }
     public bool PreserveOriginalDexFiles { get; init; } = true;
+    public DexPreservationMode DexPreservationMode { get; init; } = DexPreservationMode.Disabled;
+    public bool ConfirmDangerousDexReplacement { get; init; }
     public bool EnsureInternetPermission { get; init; } = true;
     public bool EnsureExtractNativeLibs { get; init; } = true;
     public string? PreferredActivityName { get; init; }

@@ -22,6 +22,8 @@ public sealed class DexMergeService : IDexMergeService
 
         switch (mode)
         {
+            case DexPreservationMode.Disabled:
+                return Task.FromResult<(bool Success, string? Error)>((true, null));
             case DexPreservationMode.ReplaceAllDexFiles:
                 ReplaceAllDexFiles(rebuilt, sourceDexEntries);
                 break;

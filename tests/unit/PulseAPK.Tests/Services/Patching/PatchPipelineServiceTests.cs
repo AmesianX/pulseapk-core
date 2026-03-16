@@ -39,47 +39,118 @@ public class PatchPipelineServiceTests
 
 
     [Fact]
-    public async Task RunAsync_DoesNotOverwriteDex_WhenSmaliInjectionApplied()
+    public async Task RunAsync_SkipsDexMerge_WhenDexModeDisabled()
     {
         var inputApk = Path.Combine(Path.GetTempPath(), $"input-{Guid.NewGuid():N}.apk");
         await File.WriteAllTextAsync(inputApk, "apk");
         var outputApk = Path.Combine(Path.GetTempPath(), $"output-{Guid.NewGuid():N}.apk");
 
-        var pipeline = CreatePipeline();
+        var fakeDexMergeService = new FakeDexMergeService(shouldFail: false);
+        var pipeline = CreatePipeline(fakeDexMergeService: fakeDexMergeService);
 
         var result = await pipeline.RunAsync(new PatchRequest
         {
             InputApkPath = inputApk,
             OutputApkPath = outputApk,
             SignOutput = false,
-            PreserveOriginalDexFiles = true
+            DexPreservationMode = DexPreservationMode.Disabled
         });
 
         Assert.True(result.Success);
-        Assert.DoesNotContain(result.Errors, static e => e.Contains("DEX merge", StringComparison.OrdinalIgnoreCase));
-
-        var dexStage = Assert.Single(result.StageSummaries.Where(static s => s.Stage == "dex-preservation"));
-        Assert.True(dexStage.Success);
-        Assert.Contains("smali injection", dexStage.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains(result.Warnings, static warning => warning.Contains("smali injection", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(0, fakeDexMergeService.CallCount);
+        Assert.DoesNotContain(result.StageSummaries, static stage => stage.Stage == "dex-preservation");
     }
 
     [Fact]
-    public async Task RunAsync_EmitsClearFailure_WhenExplicitDexPreserveModeFailsWithoutSmaliInjection()
+    public async Task RunAsync_PreservesSecondaryDex_WhenModeRequested()
     {
         var inputApk = Path.Combine(Path.GetTempPath(), $"input-{Guid.NewGuid():N}.apk");
         await File.WriteAllTextAsync(inputApk, "apk");
         var outputApk = Path.Combine(Path.GetTempPath(), $"output-{Guid.NewGuid():N}.apk");
 
-        var pipeline = CreatePipeline(dexMergeShouldFail: true);
+        var fakeDexMergeService = new FakeDexMergeService(shouldFail: false);
+        var pipeline = CreatePipeline(fakeDexMergeService: fakeDexMergeService);
 
         var result = await pipeline.RunAsync(new PatchRequest
         {
             InputApkPath = inputApk,
             OutputApkPath = outputApk,
             SignOutput = false,
-            DecodeSources = false,
-            PreserveOriginalDexFiles = true
+            DexPreservationMode = DexPreservationMode.PreserveUnmodifiedSecondaryDexFiles
+        });
+
+        Assert.True(result.Success);
+        Assert.Equal(1, fakeDexMergeService.CallCount);
+        Assert.Equal(DexPreservationMode.PreserveUnmodifiedSecondaryDexFiles, fakeDexMergeService.LastMode);
+        var dexStage = Assert.Single(result.StageSummaries.Where(static s => s.Stage == "dex-preservation"));
+        Assert.True(dexStage.Success);
+    }
+
+    [Fact]
+    public async Task RunAsync_BlocksReplaceAllDex_WhenSmaliInjectionAppliedWithoutDangerousConfirmation()
+    {
+        var inputApk = Path.Combine(Path.GetTempPath(), $"input-{Guid.NewGuid():N}.apk");
+        await File.WriteAllTextAsync(inputApk, "apk");
+        var outputApk = Path.Combine(Path.GetTempPath(), $"output-{Guid.NewGuid():N}.apk");
+
+        var fakeDexMergeService = new FakeDexMergeService(shouldFail: false);
+        var pipeline = CreatePipeline(fakeDexMergeService: fakeDexMergeService);
+
+        var result = await pipeline.RunAsync(new PatchRequest
+        {
+            InputApkPath = inputApk,
+            OutputApkPath = outputApk,
+            SignOutput = false,
+            DexPreservationMode = DexPreservationMode.ReplaceAllDexFiles
+        });
+
+        Assert.False(result.Success);
+        Assert.Equal(0, fakeDexMergeService.CallCount);
+        var dexStage = Assert.Single(result.StageSummaries.Where(static s => s.Stage == "dex-preservation"));
+        Assert.False(dexStage.Success);
+        Assert.Contains("discard injected smali changes", dexStage.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task RunAsync_AllowsReplaceAllDex_WhenDangerousModeExplicitlyConfirmed()
+    {
+        var inputApk = Path.Combine(Path.GetTempPath(), $"input-{Guid.NewGuid():N}.apk");
+        await File.WriteAllTextAsync(inputApk, "apk");
+        var outputApk = Path.Combine(Path.GetTempPath(), $"output-{Guid.NewGuid():N}.apk");
+
+        var fakeDexMergeService = new FakeDexMergeService(shouldFail: false);
+        var pipeline = CreatePipeline(fakeDexMergeService: fakeDexMergeService);
+
+        var result = await pipeline.RunAsync(new PatchRequest
+        {
+            InputApkPath = inputApk,
+            OutputApkPath = outputApk,
+            SignOutput = false,
+            DexPreservationMode = DexPreservationMode.ReplaceAllDexFiles,
+            ConfirmDangerousDexReplacement = true
+        });
+
+        Assert.True(result.Success);
+        Assert.Equal(1, fakeDexMergeService.CallCount);
+        Assert.Equal(DexPreservationMode.ReplaceAllDexFiles, fakeDexMergeService.LastMode);
+    }
+
+    [Fact]
+    public async Task RunAsync_EmitsClearFailure_WhenDexPreserveModeFails()
+    {
+        var inputApk = Path.Combine(Path.GetTempPath(), $"input-{Guid.NewGuid():N}.apk");
+        await File.WriteAllTextAsync(inputApk, "apk");
+        var outputApk = Path.Combine(Path.GetTempPath(), $"output-{Guid.NewGuid():N}.apk");
+
+        var fakeDexMergeService = new FakeDexMergeService(shouldFail: true);
+        var pipeline = CreatePipeline(fakeDexMergeService: fakeDexMergeService);
+
+        var result = await pipeline.RunAsync(new PatchRequest
+        {
+            InputApkPath = inputApk,
+            OutputApkPath = outputApk,
+            SignOutput = false,
+            DexPreservationMode = DexPreservationMode.PreserveUnmodifiedSecondaryDexFiles
         });
 
         Assert.False(result.Success);
@@ -88,8 +159,10 @@ public class PatchPipelineServiceTests
         Assert.Contains("DEX merge failed", dexStage.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static PatchPipelineService CreatePipeline(bool dexMergeShouldFail = false)
+    private static PatchPipelineService CreatePipeline(bool dexMergeShouldFail = false, FakeDexMergeService? fakeDexMergeService = null)
     {
+        fakeDexMergeService ??= new FakeDexMergeService(dexMergeShouldFail);
+
         return new PatchPipelineService(
             new PatchRequestValidatorService(),
             new FakeArchitectureService(),
@@ -99,7 +172,7 @@ public class PatchPipelineServiceTests
             new FakeManifestPatchService(),
             new FakeGadgetInjectionService(),
             new FakeSmaliPatchService(),
-            new FakeDexMergeService(dexMergeShouldFail),
+            fakeDexMergeService,
             new FakeSigningService());
     }
 
@@ -166,8 +239,15 @@ public class PatchPipelineServiceTests
             _shouldFail = shouldFail;
         }
 
+        public int CallCount { get; private set; }
+
+        public DexPreservationMode? LastMode { get; private set; }
+
         public Task<(bool Success, string? Error)> PreserveOriginalDexFilesAsync(string originalApkPath, string rebuiltApkPath, DexPreservationMode mode = DexPreservationMode.PreserveUnmodifiedSecondaryDexFiles, CancellationToken cancellationToken = default)
         {
+            CallCount++;
+            LastMode = mode;
+
             if (_shouldFail)
             {
                 return Task.FromResult((false, (string?)"DEX merge failed in explicit preserve mode."));
