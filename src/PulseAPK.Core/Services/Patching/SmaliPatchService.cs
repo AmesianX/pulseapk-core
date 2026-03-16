@@ -168,7 +168,7 @@ public sealed class SmaliPatchService : ISmaliPatchService
         }
 
         var manifestContent = File.ReadAllText(manifestPath);
-        var packageMatch = Regex.Match(manifestContent, @"\bpackage\s*=\s*['"](?<package>[^'"]+)['"]");
+        var packageMatch = Regex.Match(manifestContent, @"\bpackage\s*=\s*['""](?<package>[^'""]+)['""]");
         return packageMatch.Success ? packageMatch.Groups["package"].Value : null;
     }
 
