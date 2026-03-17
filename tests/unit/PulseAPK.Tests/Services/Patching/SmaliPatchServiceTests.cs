@@ -248,4 +248,34 @@ public class SmaliPatchServiceTests
         Assert.Contains(".method private static loadFridaGadget()V", output, StringComparison.Ordinal);
         Assert.Contains("invoke-static {}, Lcom/example/SplashScreen;->loadFridaGadget()V", output, StringComparison.Ordinal);
     }
+    [Fact]
+    public async Task PatchAsync_DelayedMode_PreservesExistingImmediateInvocationByAddingHelperMethod()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"smali-patch-delayed-existing-immediate-call-{Guid.NewGuid():N}");
+        var smaliPath = Path.Combine(root, "smali", "com", "app", "damnvulnerablebank");
+        Directory.CreateDirectory(smaliPath);
+
+        var file = Path.Combine(smaliPath, "SplashScreen.smali");
+        await File.WriteAllTextAsync(file, @".class public Lcom/app/damnvulnerablebank/SplashScreen;
+.super Landroid/app/Activity;
+
+.method protected onCreate(Landroid/os/Bundle;)V
+    .locals 0
+    invoke-super {p0, p1}, Landroid/app/Activity;->onCreate(Landroid/os/Bundle;)V
+    invoke-static {}, Lcom/app/damnvulnerablebank/SplashScreen;->loadFridaGadget()V
+    return-void
+.end method
+
+.end class");
+
+        var service = new SmaliPatchService();
+        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", useDelayedLoad: true);
+        var output = await File.ReadAllTextAsync(file);
+
+        Assert.True(result.Success);
+        Assert.Contains("invoke-static {}, Lcom/app/damnvulnerablebank/SplashScreen;->loadFridaGadget()V", output, StringComparison.Ordinal);
+        Assert.Contains(".method private static loadFridaGadget()V", output, StringComparison.Ordinal);
+        Assert.Contains(".method private static loadFridaGadgetIfNeeded()V", output, StringComparison.Ordinal);
+    }
+
 }
