@@ -376,7 +376,7 @@ public sealed class SmaliPatchService : ISmaliPatchService
 
     private static Match? FindLastEndClassDirective(string content)
     {
-        var matches = Regex.Matches(content, @"(?m)^\s*\.end class\b");
+        var matches = Regex.Matches(content, @"(?m)^\s*\.end\s+class\b");
         if (matches.Count == 0)
         {
             return null;
