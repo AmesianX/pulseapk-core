@@ -41,6 +41,7 @@ public sealed class SmaliPatchService : ISmaliPatchService
         }
 
         patched = InjectCallIntoLifecycleMethod(patched, classDescriptor, lifecycleMethodName, lifecycleSignature, superClassDescriptor);
+        patched = EnsureHelpersForReferencedCalls(patched, classDescriptor);
 
         if (ReferenceEquals(patched, originalContent) || patched == originalContent)
         {
@@ -232,6 +233,23 @@ public sealed class SmaliPatchService : ISmaliPatchService
             .ToArray();
 
         return InsertLinesBeforeEndClass(content, normalizedLines);
+    }
+
+    private static string EnsureHelpersForReferencedCalls(string content, string classDescriptor)
+    {
+        if (content.Contains("->loadFridaGadget()V", StringComparison.Ordinal) &&
+            !content.Contains(".method private static loadFridaGadget()V", StringComparison.Ordinal))
+        {
+            content = EnsureImmediateLoadHelperMethod(content);
+        }
+
+        if (content.Contains("->loadFridaGadgetIfNeeded()V", StringComparison.Ordinal) &&
+            !content.Contains(".method private static loadFridaGadgetIfNeeded()V", StringComparison.Ordinal))
+        {
+            content = EnsureDelayedLoadHelperMembers(content, classDescriptor);
+        }
+
+        return content;
     }
 
     private static string InsertLinesBeforeEndClass(string content, IReadOnlyList<string> lines)
