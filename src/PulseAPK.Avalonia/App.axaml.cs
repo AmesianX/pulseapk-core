@@ -66,6 +66,7 @@ public partial class App : Application
         services.AddTransient<ISmaliPatchService, SmaliPatchService>();
         services.AddTransient<IDexMergeService, DexMergeService>();
         services.AddTransient<ISigningService, SigningService>();
+        services.AddTransient<IDexMethodLookupService, DexMethodLookupService>();
         services.AddTransient<IFinalDexInspectionService, FinalDexInspectionService>();
         services.AddTransient<IPatchPipelineService, PatchPipelineService>();
 
