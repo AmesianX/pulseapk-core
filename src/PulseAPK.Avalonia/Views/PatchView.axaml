@@ -54,6 +54,10 @@
             <StackPanel Spacing="8">
                 <CheckBox Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[PatchSignOutputApk]}"
                           IsChecked="{Binding SignApk}" />
+                <CheckBox Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[PatchInjectForAllArchitectures]}"
+                          IsChecked="{Binding InjectLibForAllArchitectures}" />
+                <CheckBox Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[PatchSkipDexValidation]}"
+                          IsChecked="{Binding SkipDexValidation}" />
                 <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[PatchScriptProfile]}"
                            FontWeight="SemiBold"
                            Margin="0,8,0,0" />

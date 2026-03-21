@@ -124,7 +124,7 @@ public sealed class PatchPipelineService : IPatchPipelineService
 
             result.StageSummaries.Add(new PatchStageSummary("manifest-patch", true, "Manifest patched."));
 
-            var injectionArchitectures = ResolveInjectionArchitectures(decompiledDirectory, architecture);
+            var injectionArchitectures = ResolveInjectionArchitectures(decompiledDirectory, architecture, request.InjectForAllArchitectures);
             foreach (var targetArchitecture in injectionArchitectures)
             {
                 var gadgetResolution = await _fridaArtifactService.ResolveGadgetAsync(request, targetArchitecture, cancellationToken);
@@ -239,7 +239,13 @@ public sealed class PatchPipelineService : IPatchPipelineService
                 finalArtifactPath = signResult.SignedApkPath!;
             }
 
-            if (smaliInjectionApplied)
+            if (smaliInjectionApplied && request.SkipDexValidation)
+            {
+                const string skippedDexValidationMessage = "Final DEX verification was skipped by user request.";
+                result.Warnings.Add(skippedDexValidationMessage);
+                result.StageSummaries.Add(new PatchStageSummary("dex-verification", true, skippedDexValidationMessage));
+            }
+            else if (smaliInjectionApplied)
             {
                 var classDescriptor = ToClassDescriptor(activityName);
                 var helperMethodName = request.UseDelayedLoad
@@ -311,8 +317,13 @@ public sealed class PatchPipelineService : IPatchPipelineService
         return path;
     }
 
-    private static List<string> ResolveInjectionArchitectures(string decompiledDirectory, string selectedArchitecture)
+    private static List<string> ResolveInjectionArchitectures(string decompiledDirectory, string selectedArchitecture, bool injectForAllArchitectures)
     {
+        if (!injectForAllArchitectures)
+        {
+            return [selectedArchitecture];
+        }
+
         var architectures = new List<string>();
 
         if (Directory.Exists(Path.Combine(decompiledDirectory, "lib")))
