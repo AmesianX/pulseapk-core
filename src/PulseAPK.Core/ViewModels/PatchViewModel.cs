@@ -33,6 +33,12 @@ public partial class PatchViewModel : ObservableObject
     private bool _signApk = true;
 
     [ObservableProperty]
+    private bool _injectLibForAllArchitectures;
+
+    [ObservableProperty]
+    private bool _skipDexValidation;
+
+    [ObservableProperty]
     private DexPreservationOption _selectedDexPreservationOption = new("Disabled (default)", DexPreservationMode.Disabled);
 
     [ObservableProperty]
@@ -118,6 +124,8 @@ public partial class PatchViewModel : ObservableObject
 
     partial void OnOutputApkPathChanged(string value) => UpdateCommandPreview();
     partial void OnSignApkChanged(bool value) => UpdateCommandPreview();
+    partial void OnInjectLibForAllArchitecturesChanged(bool value) => UpdateCommandPreview();
+    partial void OnSkipDexValidationChanged(bool value) => UpdateCommandPreview();
     partial void OnSelectedDexPreservationOptionChanged(DexPreservationOption value) => UpdateCommandPreview();
     partial void OnSelectedScriptInjectionOptionChanged(ScriptInjectionOption value) => UpdateCommandPreview();
 
@@ -197,7 +205,9 @@ public partial class PatchViewModel : ObservableObject
                 KeepIntermediateFiles = false,
                 PreserveOriginalDexFiles = false,
                 DexPreservationMode = selectedDexMode,
-                ConfirmDangerousDexReplacement = confirmedDangerousDexMode
+                ConfirmDangerousDexReplacement = confirmedDangerousDexMode,
+                InjectForAllArchitectures = InjectLibForAllArchitectures,
+                SkipDexValidation = SkipDexValidation
             };
 
             AppendLog(BuildRunSummary(request));
@@ -310,6 +320,8 @@ public partial class PatchViewModel : ObservableObject
         builder.AppendLine(L("PatchPreviewDecodeSources"));
         builder.AppendLine(L("PatchPreviewUseAapt2"));
         builder.AppendLine(string.Format(L("PatchPreviewScriptProfile"), SelectedScriptInjectionOption.Label));
+        builder.AppendLine(string.Format(L("PatchPreviewInjectAllArchitectures"), InjectLibForAllArchitectures));
+        builder.AppendLine(string.Format(L("PatchPreviewSkipDexValidation"), SkipDexValidation));
         builder.AppendLine(string.Format(L("PatchPreviewDexPreservation"), SelectedDexPreservationOption.Label));
         builder.Append(string.Format(L("PatchPreviewSignOutput"), SignApk));
         ConsoleLog = builder.ToString();

@@ -24,4 +24,6 @@ public sealed record PatchRequest
     public bool DecodeResources { get; init; } = true;
     public bool DecodeSources { get; init; } = true;
     public bool UseAapt2ForBuild { get; init; }
+    public bool InjectForAllArchitectures { get; init; }
+    public bool SkipDexValidation { get; init; }
 }
