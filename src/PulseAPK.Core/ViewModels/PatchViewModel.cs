@@ -216,6 +216,7 @@ public partial class PatchViewModel : ObservableObject
             {
                 AppendLog(L("PatchLogDangerousDexCancelled"));
                 return;
+            }
         }
 
         IsRunning = true;
