@@ -4,5 +4,6 @@ public enum ScriptInjectionProfile
 {
     FridaGadget,
     FridaListener,
+    InjectFridaGadgetOnly,
     SampleInjection
 }

@@ -50,6 +50,16 @@ public class PatchViewModelTests
     }
 
     [Fact]
+    public void ScriptInjectionOptions_IncludeInjectFridaGadgetOnlyProfile()
+    {
+        var viewModel = CreateViewModel();
+
+        Assert.Contains(viewModel.ScriptInjectionOptions, option =>
+            option.Profile == ScriptInjectionProfile.InjectFridaGadgetOnly &&
+            option.Label == "Inject frida-gadget only");
+    }
+
+    [Fact]
     public void MigrateFridaGadgetConfigIfNeeded_UpdatesLegacyInteractionPath_AndPreservesOtherKeys()
     {
         var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
