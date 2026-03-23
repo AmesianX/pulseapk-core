@@ -39,7 +39,7 @@ public class SmaliPatchServiceTests
         Assert.Contains(".method protected attachBaseContext(Landroid/content/Context;)V", appContent, StringComparison.Ordinal);
         Assert.Contains("invoke-static {}, Lcom/example/app/CustomApp;->loadFridaGadgetSafely()V", appContent, StringComparison.Ordinal);
         Assert.Contains("Failed to load frida-gadget", appContent, StringComparison.Ordinal);
-        Assert.Contains("Loaded frida-gadget in attachBaseContext", appContent, StringComparison.Ordinal);
+        Assert.Contains("Frida gadget loaded in attachBaseContext; you can attach now.", appContent, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -112,11 +112,11 @@ public class SmaliPatchServiceTests
         Assert.True(delayed.Success);
         Assert.NotEqual(immediateOutput, delayedOutput);
         Assert.Contains("invoke-static {}, Lcom/example/MainActivity;->loadFridaGadget()V", immediateOutput, StringComparison.Ordinal);
-        Assert.Contains("Loaded frida-gadget in activity lifecycle", immediateOutput, StringComparison.Ordinal);
+        Assert.Contains("Frida gadget loaded in activity lifecycle; you can attach now.", immediateOutput, StringComparison.Ordinal);
         Assert.Contains(".catch Ljava/lang/Throwable;", immediateOutput, StringComparison.Ordinal);
         Assert.DoesNotContain("arm64-v8a", immediateOutput, StringComparison.Ordinal);
         Assert.Contains("invoke-static {}, Lcom/example/MainActivity;->loadFridaGadgetIfNeeded()V", delayedOutput, StringComparison.Ordinal);
-        Assert.Contains("Loaded frida-gadget in activity lifecycle", delayedOutput, StringComparison.Ordinal);
+        Assert.Contains("Frida gadget loaded in activity lifecycle; you can attach now.", delayedOutput, StringComparison.Ordinal);
         Assert.Contains(".catch Ljava/lang/Throwable;", delayedOutput, StringComparison.Ordinal);
         Assert.DoesNotContain("arm64-v8a", delayedOutput, StringComparison.Ordinal);
         Assert.Contains(".method protected onResume()V", delayedOutput, StringComparison.Ordinal);
