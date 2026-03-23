@@ -557,7 +557,39 @@ public class SmaliPatchServiceTests
     }
 
     [Fact]
-    public async Task PatchAsync_FailsWhenOnCreateHasNoSuperOnCreateAnchor()
+    public async Task PatchAsync_OnCreateFallbackInsertsHelperAfterLocals_WhenSuperCallFormatIsUnexpected()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"smali-patch-oncreate-fallback-{Guid.NewGuid():N}");
+        var smaliPath = Path.Combine(root, "smali", "com", "example");
+        Directory.CreateDirectory(smaliPath);
+
+        var file = Path.Combine(smaliPath, "MainActivity.smali");
+        await File.WriteAllTextAsync(file, @".class public Lcom/example/MainActivity;
+.super Landroid/app/Activity;
+
+.method protected onCreate(Landroid/os/Bundle;)V
+    .locals 1
+    invoke-super {p0, p1},Landroid/app/Activity;->onCreate(Landroid/os/Bundle;)V
+    const/4 v0, 0x0
+    return-void
+.end method
+
+.end class");
+
+        var service = new SmaliPatchService();
+        var result = await service.PatchAsync(root, "com.example.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
+        var output = await File.ReadAllTextAsync(file);
+
+        Assert.True(result.Success);
+        Assert.Contains(
+            ".locals 1\n    invoke-static {}, Lcom/example/MainActivity;->loadFridaGadget()V\n    invoke-super {p0, p1},Landroid/app/Activity;->onCreate(Landroid/os/Bundle;)V",
+            output,
+            StringComparison.Ordinal);
+        Assert.Contains(".method private static loadFridaGadget()V", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PatchAsync_FailsWhenOnCreateHasNoRegistersOrLocalsDirective()
     {
         var root = Path.Combine(Path.GetTempPath(), $"smali-patch-missing-oncreate-anchor-{Guid.NewGuid():N}");
         var smaliPath = Path.Combine(root, "smali", "com", "example");
@@ -568,7 +600,6 @@ public class SmaliPatchServiceTests
 .super Landroid/app/Activity;
 
 .method protected onCreate(Landroid/os/Bundle;)V
-    .locals 0
     return-void
 .end method
 
