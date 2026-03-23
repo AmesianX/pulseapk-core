@@ -97,6 +97,7 @@ public partial class PatchViewModel : ObservableObject
         [
             new(L("PatchScriptInjectFridaGadget"), ScriptInjectionProfile.FridaGadget),
             new("Inject gadget listener", ScriptInjectionProfile.FridaListener),
+            new("Inject frida-gadget only", ScriptInjectionProfile.InjectFridaGadgetOnly),
             new(L("PatchScriptSampleInjection"), ScriptInjectionProfile.SampleInjection)
         ];
 
@@ -375,6 +376,7 @@ public partial class PatchViewModel : ObservableObject
         {
             ScriptInjectionProfile.FridaGadget => ResolveCustomScriptPath("script.js"),
             ScriptInjectionProfile.FridaListener => ResolveCustomScriptPath("frida-listener.js"),
+            ScriptInjectionProfile.InjectFridaGadgetOnly => null,
             _ => null
         };
     }
