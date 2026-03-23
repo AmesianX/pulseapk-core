@@ -27,8 +27,8 @@ public sealed class GadgetInjectionService : IGadgetInjectionService
 
             File.Copy(gadgetSourcePath, Path.Combine(libDirectory, GadgetFileName), overwrite: true);
 
-            var configStatus = EnsureRequiredAsset(request.ConfigFilePath, libDirectory, ConfigFileName, "config");
-            var scriptStatus = EnsureRequiredAsset(request.ScriptFilePath, libDirectory, ScriptFileName, "script");
+            var configStatus = EnsureOptionalAsset(request.ConfigFilePath, libDirectory, ConfigFileName, "config");
+            var scriptStatus = EnsureOptionalAsset(request.ScriptFilePath, libDirectory, ScriptFileName, "script");
 
             var hasAssetCopyError = configStatus.Status == OptionalAssetCopyStatus.Error;
             hasAssetCopyError |= scriptStatus.Status == OptionalAssetCopyStatus.Error;
@@ -53,16 +53,16 @@ public sealed class GadgetInjectionService : IGadgetInjectionService
         }
     }
 
-    private static OptionalAssetCopyResult EnsureRequiredAsset(string? sourceFile, string abiDirectory, string outputName, string assetLabel)
+    private static OptionalAssetCopyResult EnsureOptionalAsset(string? sourceFile, string abiDirectory, string outputName, string assetLabel)
     {
         if (string.IsNullOrWhiteSpace(sourceFile))
         {
-            return new OptionalAssetCopyResult(OptionalAssetCopyStatus.Error, $"{assetLabel} path not configured.");
+            return new OptionalAssetCopyResult(OptionalAssetCopyStatus.Skipped, $"{assetLabel} path not configured.");
         }
 
         if (!File.Exists(sourceFile))
         {
-            return new OptionalAssetCopyResult(OptionalAssetCopyStatus.Error, $"{assetLabel} source '{sourceFile}' not found.");
+            return new OptionalAssetCopyResult(OptionalAssetCopyStatus.Missing, $"{assetLabel} source '{sourceFile}' not found.");
         }
 
         try
