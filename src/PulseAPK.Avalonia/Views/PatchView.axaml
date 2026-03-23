@@ -7,9 +7,14 @@
     <Grid RowDefinitions="Auto,Auto,Auto,*"
           RowSpacing="16"
           Margin="20">
-        <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[PatchHeader]}"
-                   FontSize="24"
-                   FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+            <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[PatchHeader]}"
+                       FontSize="24"
+                       FontWeight="SemiBold" />
+            <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[PatchBetaWarning]}"
+                       FontSize="13"
+                       Opacity="0.7" />
+        </StackPanel>
 
         <Border Grid.Row="1"
                 Background="{DynamicResource CardBackgroundBrush}"
@@ -62,14 +67,17 @@
                            FontWeight="SemiBold"
                            Margin="0,8,0,0" />
                 <ComboBox ItemsSource="{Binding ScriptInjectionOptions}"
-                          SelectedItem="{Binding SelectedScriptInjectionOption}"
-                          IsEnabled="False">
+                          SelectedItem="{Binding SelectedScriptInjectionOption}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Label}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
+                <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[PatchScriptSampleInjectionInfo]}"
+                           FontSize="12"
+                           Opacity="0.7"
+                           IsVisible="{Binding IsSampleInjectionProfileSelected}" />
                 <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[PatchDexPreservationMode]}"
                            FontWeight="SemiBold"
                            Margin="0,8,0,0" />

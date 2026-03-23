@@ -83,6 +83,7 @@ public sealed class PatchPipelineService : IPatchPipelineService
         var cleanupDirectory = !request.KeepIntermediateFiles ? decompiledDirectory : null;
 
         var smaliInjectionApplied = false;
+        var activitySmaliPatchApplied = false;
 
         try
         {
@@ -124,54 +125,117 @@ public sealed class PatchPipelineService : IPatchPipelineService
 
             result.StageSummaries.Add(new PatchStageSummary("manifest-patch", true, "Manifest patched."));
 
-            var injectionArchitectures = ResolveInjectionArchitectures(decompiledDirectory, architecture, request.InjectForAllArchitectures);
-            foreach (var targetArchitecture in injectionArchitectures)
+            if (request.ScriptInjectionProfile == ScriptInjectionProfile.SampleInjection)
             {
-                var gadgetResolution = await _fridaArtifactService.ResolveGadgetAsync(request, targetArchitecture, cancellationToken);
-                if (gadgetResolution.Error is not null || gadgetResolution.GadgetPath is null)
+                const string sampleInjectionMessage = "Sample injection profile selected; skipping Frida artifact resolution and gadget copy.";
+                result.Warnings.Add(sampleInjectionMessage);
+                result.StageSummaries.Add(new PatchStageSummary("sample-injection", true, sampleInjectionMessage));
+
+                if (!request.DecodeSources)
                 {
-                    result.Errors.Add(gadgetResolution.Error ?? "Unable to resolve Frida gadget artifact.");
-                    result.StageSummaries.Add(new PatchStageSummary("artifact-resolution", false, result.Errors.Last()));
-                    return result;
+                    const string sampleSmaliSkipMessage = "Sample smali patch skipped because source decoding is disabled.";
+                    result.Warnings.Add(sampleSmaliSkipMessage);
+                    result.StageSummaries.Add(new PatchStageSummary("smali-patch", true, sampleSmaliSkipMessage));
                 }
-
-                var gadgetInject = await _gadgetInjectionService.InjectAsync(
-                    decompiledDirectory,
-                    request,
-                    targetArchitecture,
-                    gadgetResolution.GadgetPath,
-                    cancellationToken);
-                if (!gadgetInject.Success)
+                else
                 {
-                    result.Errors.Add(gadgetInject.Error ?? "Gadget injection failed.");
-                    result.StageSummaries.Add(new PatchStageSummary("gadget-injection", false, result.Errors.Last()));
-                    return result;
+                    var smaliPatch = await _smaliPatchService.PatchAsync(
+                        decompiledDirectory,
+                        activityName,
+                        request.ScriptInjectionProfile,
+                        request.UseDelayedLoad,
+                        cancellationToken);
+                    if (!smaliPatch.Success)
+                    {
+                        result.Errors.Add(smaliPatch.Error ?? "Sample smali patch failed.");
+                        result.StageSummaries.Add(new PatchStageSummary("smali-patch", false, result.Errors.Last()));
+                        return result;
+                    }
+
+                    result.StageSummaries.Add(new PatchStageSummary("smali-patch", true, "Sample smali patch applied."));
+                    smaliInjectionApplied = true;
+                    activitySmaliPatchApplied = true;
                 }
-            }
-
-            var injectionMessage = injectionArchitectures.Count == 1
-                ? $"Frida gadget injected for ABI '{injectionArchitectures[0]}'."
-                : $"Frida gadget injected for ABIs: {string.Join(", ", injectionArchitectures)}.";
-            result.StageSummaries.Add(new PatchStageSummary("gadget-injection", true, injectionMessage));
-
-            if (!request.DecodeSources)
-            {
-                const string smaliSkipMessage = "Smali patch skipped because source decoding is disabled.";
-                result.Warnings.Add(smaliSkipMessage);
-                result.StageSummaries.Add(new PatchStageSummary("smali-patch", true, smaliSkipMessage));
             }
             else
             {
-                var smaliPatch = await _smaliPatchService.PatchAsync(decompiledDirectory, activityName, request.UseDelayedLoad, cancellationToken);
-                if (!smaliPatch.Success)
+                var injectionArchitectures = ResolveInjectionArchitectures(decompiledDirectory, architecture, request.InjectForAllArchitectures);
+                var optionalAssetWarnings = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var targetArchitecture in injectionArchitectures)
                 {
-                    result.Errors.Add(smaliPatch.Error ?? "Smali patch failed.");
-                    result.StageSummaries.Add(new PatchStageSummary("smali-patch", false, result.Errors.Last()));
-                    return result;
+                    var gadgetResolution = await _fridaArtifactService.ResolveGadgetAsync(request, targetArchitecture, cancellationToken);
+                    if (gadgetResolution.Error is not null || gadgetResolution.GadgetPath is null)
+                    {
+                        result.Errors.Add(gadgetResolution.Error ?? "Unable to resolve Frida gadget artifact.");
+                        result.StageSummaries.Add(new PatchStageSummary("artifact-resolution", false, result.Errors.Last()));
+                        return result;
+                    }
+
+                    var gadgetInject = await _gadgetInjectionService.InjectAsync(
+                        decompiledDirectory,
+                        request,
+                        targetArchitecture,
+                        gadgetResolution.GadgetPath,
+                        cancellationToken);
+                    if (!gadgetInject.Success)
+                    {
+                        result.Errors.Add(gadgetInject.Error ?? "Gadget injection failed.");
+                        result.StageSummaries.Add(new PatchStageSummary("gadget-injection", false, result.Errors.Last()));
+                        AddOptionalAssetWarning(result, optionalAssetWarnings, gadgetInject.ScriptStatus, "script");
+                        AddOptionalAssetWarning(result, optionalAssetWarnings, gadgetInject.ConfigStatus, "config");
+                        return result;
+                    }
+
+                    AddOptionalAssetWarning(result, optionalAssetWarnings, gadgetInject.ScriptStatus, "script");
+                    AddOptionalAssetWarning(result, optionalAssetWarnings, gadgetInject.ConfigStatus, "config");
+                    result.StageSummaries.Add(new PatchStageSummary(
+                        "gadget-assets",
+                        true,
+                        $"ABI '{targetArchitecture}' script={gadgetInject.ScriptStatus.Status}, config={gadgetInject.ConfigStatus.Status}."));
                 }
 
-                result.StageSummaries.Add(new PatchStageSummary("smali-patch", true, "Smali patched."));
-                smaliInjectionApplied = true;
+                var injectionMessage = injectionArchitectures.Count == 1
+                    ? $"Frida gadget injected for ABI '{injectionArchitectures[0]}'."
+                    : $"Frida gadget injected for ABIs: {string.Join(", ", injectionArchitectures)}.";
+                result.StageSummaries.Add(new PatchStageSummary("gadget-injection", true, injectionMessage));
+
+                if (!request.DecodeSources)
+                {
+                    const string smaliSkipMessage = "Smali patch skipped because source decoding is disabled.";
+                    result.Warnings.Add(smaliSkipMessage);
+                    result.StageSummaries.Add(new PatchStageSummary("smali-patch", true, smaliSkipMessage));
+                }
+                else
+                {
+                    var smaliPatch = await _smaliPatchService.PatchAsync(
+                        decompiledDirectory,
+                        activityName,
+                        request.ScriptInjectionProfile,
+                        request.UseDelayedLoad,
+                        cancellationToken);
+                    if (!smaliPatch.Success)
+                    {
+                        if (IsRecoverableActivityPatchFailure(smaliPatch.Error))
+                        {
+                            var warningMessage = smaliPatch.Error!;
+                            result.Warnings.Add(warningMessage);
+                            result.StageSummaries.Add(new PatchStageSummary("smali-patch", true, warningMessage));
+                            smaliInjectionApplied = true;
+                        }
+                        else
+                        {
+                            result.Errors.Add(smaliPatch.Error ?? "Smali patch failed.");
+                            result.StageSummaries.Add(new PatchStageSummary("smali-patch", false, result.Errors.Last()));
+                            return result;
+                        }
+                    }
+                    else
+                    {
+                        result.StageSummaries.Add(new PatchStageSummary("smali-patch", true, "Smali patched."));
+                        smaliInjectionApplied = true;
+                        activitySmaliPatchApplied = true;
+                    }
+                }
             }
 
             var buildCode = await _apktoolService.BuildAsync(decompiledDirectory, request.OutputApkPath, request.UseAapt2ForBuild, cancellationToken);
@@ -248,10 +312,16 @@ public sealed class PatchPipelineService : IPatchPipelineService
             else if (smaliInjectionApplied)
             {
                 var classDescriptor = ToClassDescriptor(activityName);
-                var helperMethodName = request.UseDelayedLoad
-                    ? "loadFridaGadgetIfNeeded"
-                    : "loadFridaGadget";
-                var methodReference = $"{classDescriptor}->{helperMethodName}()V";
+                var methodReference = request.ScriptInjectionProfile != ScriptInjectionProfile.SampleInjection && !activitySmaliPatchApplied
+                    ? ResolveApplicationMethodReference(decompiledDirectory)
+                    : request.ScriptInjectionProfile == ScriptInjectionProfile.SampleInjection
+                    ? "logSampleInjectionApplied"
+                    : request.UseDelayedLoad
+                        ? "loadFridaGadgetIfNeeded"
+                        : "loadFridaGadget";
+                methodReference = methodReference.Contains("->", StringComparison.Ordinal)
+                    ? methodReference
+                    : $"{classDescriptor}->{methodReference}()V";
                 var inspection = await _finalDexInspectionService.ContainsMethodReferenceAsync(finalArtifactPath, methodReference, cancellationToken);
                 var diagnosticSummary = SummarizeDexDiagnostics(inspection.Diagnostics);
                 result.Warnings.Add($"DEX verification target: '{methodReference}' in '{finalArtifactPath}'.");
@@ -359,6 +429,19 @@ public sealed class PatchPipelineService : IPatchPipelineService
     private static string ToClassDescriptor(string activityName)
         => $"L{activityName.Replace('.', '/')};";
 
+    private static void AddOptionalAssetWarning(
+        PatchResult result,
+        HashSet<string> warnings,
+        OptionalAssetCopyResult status,
+        string assetName)
+    {
+        var warning = $"Optional {assetName} status: {status.Status} - {status.Detail}";
+        if (warnings.Add(warning))
+        {
+            result.Warnings.Add(warning);
+        }
+    }
+
     private static DexDiagnosticsSummary SummarizeDexDiagnostics(string diagnostics)
     {
         var summary = new DexDiagnosticsSummary();
@@ -390,4 +473,56 @@ public sealed class PatchPipelineService : IPatchPipelineService
     }
 
     private readonly record struct DexDiagnosticsSummary(int ParsedDexEntries = 0, int FailedDexEntries = 0, bool TupleSearchCompleted = false);
+
+    private static bool IsRecoverableActivityPatchFailure(string? error)
+        => !string.IsNullOrWhiteSpace(error) &&
+           error.Contains(SmaliPatchService.ActivityInjectionPointFailureWithApplicationPatchPrefix, StringComparison.Ordinal) &&
+           error.Contains("injection point", StringComparison.OrdinalIgnoreCase);
+
+    private static string ResolveApplicationMethodReference(string decompiledDirectory)
+    {
+        var manifestPath = Path.Combine(decompiledDirectory, "AndroidManifest.xml");
+        var packageName = "com.pulseapk.generated";
+        var applicationName = string.Empty;
+
+        if (File.Exists(manifestPath))
+        {
+            var manifestContent = File.ReadAllText(manifestPath);
+            var packageMatch = Regex.Match(manifestContent, @"\bpackage\s*=\s*['""](?<package>[^'""]+)['""]", RegexOptions.CultureInvariant);
+            if (packageMatch.Success)
+            {
+                packageName = packageMatch.Groups["package"].Value;
+            }
+
+            var applicationMatch = Regex.Match(manifestContent, @"<application\b[^>]*\bandroid:name\s*=\s*['""](?<name>[^'""]+)['""]", RegexOptions.CultureInvariant);
+            if (applicationMatch.Success)
+            {
+                applicationName = applicationMatch.Groups["name"].Value.Trim();
+            }
+        }
+
+        var applicationFqcn = ResolveApplicationFqcn(packageName, applicationName);
+        var descriptor = $"L{applicationFqcn.Replace('.', '/')};";
+        return $"{descriptor}->loadFridaGadgetSafely()V";
+    }
+
+    private static string ResolveApplicationFqcn(string packageName, string? applicationName)
+    {
+        if (string.IsNullOrWhiteSpace(applicationName))
+        {
+            return $"{packageName}.PulseFridaApplication";
+        }
+
+        if (applicationName.StartsWith(".", StringComparison.Ordinal))
+        {
+            return packageName + applicationName;
+        }
+
+        if (!applicationName.Contains(".", StringComparison.Ordinal))
+        {
+            return $"{packageName}.{applicationName}";
+        }
+
+        return applicationName;
+    }
 }

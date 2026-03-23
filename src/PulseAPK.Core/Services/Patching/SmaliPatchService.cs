@@ -1,12 +1,29 @@
 using System.Text.RegularExpressions;
 using PulseAPK.Core.Abstractions.Patching;
+using PulseAPK.Core.Models;
 
 namespace PulseAPK.Core.Services.Patching;
 
 public sealed class SmaliPatchService : ISmaliPatchService
 {
-    public Task<(bool Success, string? Error)> PatchAsync(string decompiledDirectory, string activityName, bool useDelayedLoad, CancellationToken cancellationToken = default)
+    internal const string ActivityInjectionPointFailureWithApplicationPatchPrefix = "Application smali patch applied, but activity patch failed:";
+
+    public Task<(bool Success, string? Error)> PatchAsync(
+        string decompiledDirectory,
+        string activityName,
+        ScriptInjectionProfile profile,
+        bool useDelayedLoad,
+        CancellationToken cancellationToken = default)
     {
+        if (profile != ScriptInjectionProfile.SampleInjection)
+        {
+            var applicationPatch = PatchApplicationSmali(decompiledDirectory);
+            if (!applicationPatch.Success)
+            {
+                return Task.FromResult(applicationPatch);
+            }
+        }
+
         var smaliFile = ResolveActivitySmaliFile(decompiledDirectory, activityName);
         if (smaliFile is null)
         {
@@ -27,11 +44,15 @@ public sealed class SmaliPatchService : ISmaliPatchService
             return Task.FromResult<(bool Success, string? Error)>((false, $"Unable to determine superclass descriptor from smali file '{smaliFile}'."));
         }
 
-        var lifecycleMethodName = useDelayedLoad ? "onResume" : "onCreate";
-        var lifecycleSignature = useDelayedLoad ? "()V" : "(Landroid/os/Bundle;)V";
+        var lifecycleMethodName = profile == ScriptInjectionProfile.SampleInjection || !useDelayedLoad ? "onCreate" : "onResume";
+        var lifecycleSignature = lifecycleMethodName == "onResume" ? "()V" : "(Landroid/os/Bundle;)V";
         var patched = originalContent;
 
-        if (useDelayedLoad)
+        if (profile == ScriptInjectionProfile.SampleInjection)
+        {
+            patched = EnsureSampleInjectionHelperMethod(patched);
+        }
+        else if (useDelayedLoad)
         {
             patched = EnsureDelayedLoadHelperMembers(patched, classDescriptor);
         }
@@ -40,7 +61,7 @@ public sealed class SmaliPatchService : ISmaliPatchService
             patched = EnsureImmediateLoadHelperMethod(patched);
         }
 
-        patched = InjectCallIntoLifecycleMethod(patched, classDescriptor, lifecycleMethodName, lifecycleSignature, superClassDescriptor);
+        patched = InjectCallIntoLifecycleMethod(patched, classDescriptor, lifecycleMethodName, lifecycleSignature, superClassDescriptor, profile);
         patched = EnsureHelpersForReferencedCalls(patched, classDescriptor);
 
         if (HasMissingStaticHelperForReferencedCalls(patched, classDescriptor))
@@ -50,6 +71,11 @@ public sealed class SmaliPatchService : ISmaliPatchService
 
         if (ReferenceEquals(patched, originalContent) || patched == originalContent)
         {
+            if (profile != ScriptInjectionProfile.SampleInjection)
+            {
+                return Task.FromResult<(bool Success, string? Error)>((false, $"{ActivityInjectionPointFailureWithApplicationPatchPrefix} Unable to find an injection point in activity smali file."));
+            }
+
             return Task.FromResult<(bool Success, string? Error)>((false, "Unable to find an injection point in activity smali file."));
         }
 
@@ -62,11 +88,15 @@ public sealed class SmaliPatchService : ISmaliPatchService
         return
         [
             ".method private static loadFridaGadget()V",
-            "    .locals 1",
+            "    .locals 3",
             string.Empty,
             "    :try_start_0",
             "    const-string v0, \"frida-gadget\"",
             "    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V",
+            "    const-string v0, \"FridaGadget\"",
+            "    const-string v1, \"Frida gadget loaded in activity lifecycle; you can attach now.\"",
+            "    invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I",
+            "    move-result v0",
             "    :try_end_0",
             "    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0",
             string.Empty,
@@ -74,6 +104,10 @@ public sealed class SmaliPatchService : ISmaliPatchService
             string.Empty,
             "    :catch_0",
             "    move-exception v0",
+            "    const-string v1, \"FridaGadget\"",
+            "    const-string v2, \"Failed to load frida-gadget\"",
+            "    invoke-static {v1, v2, v0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I",
+            "    move-result v1",
             string.Empty,
             "    :done",
             "    return-void",
@@ -89,7 +123,7 @@ public sealed class SmaliPatchService : ISmaliPatchService
             ".field private static sFridaLoaded:Z",
             string.Empty,
             ".method private static loadFridaGadgetIfNeeded()V",
-            "    .locals 1",
+            "    .locals 3",
             string.Empty,
             "    sget-boolean v0, Lcom/example/PLACEHOLDER;->sFridaLoaded:Z",
             "    if-nez v0, :loaded",
@@ -97,6 +131,10 @@ public sealed class SmaliPatchService : ISmaliPatchService
             "    :try_start_0",
             "    const-string v0, \"frida-gadget\"",
             "    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V",
+            "    const-string v0, \"FridaGadget\"",
+            "    const-string v1, \"Frida gadget loaded in activity lifecycle; you can attach now.\"",
+            "    invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I",
+            "    move-result v0",
             "    const/4 v0, 0x1",
             "    sput-boolean v0, Lcom/example/PLACEHOLDER;->sFridaLoaded:Z",
             "    :try_end_0",
@@ -106,8 +144,29 @@ public sealed class SmaliPatchService : ISmaliPatchService
             string.Empty,
             "    :catch_0",
             "    move-exception v0",
+            "    const-string v1, \"FridaGadget\"",
+            "    const-string v2, \"Failed to load frida-gadget\"",
+            "    invoke-static {v1, v2, v0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I",
+            "    move-result v1",
             string.Empty,
             "    :loaded",
+            "    return-void",
+            ".end method",
+            string.Empty
+        ];
+    }
+
+    private static IReadOnlyList<string> BuildSampleInjectionHelperMethods()
+    {
+        return
+        [
+            ".method private static logSampleInjectionApplied()V",
+            "    .locals 2",
+            string.Empty,
+            "    const-string v0, \"PulseAPK\"",
+            "    const-string v1, \"PulseAPK: The app sample patch was applied\"",
+            "    invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I",
+            "    move-result v0",
             "    return-void",
             ".end method",
             string.Empty
@@ -262,6 +321,17 @@ public sealed class SmaliPatchService : ISmaliPatchService
         return InsertLinesBeforeEndClass(content, normalizedLines);
     }
 
+    private static string EnsureSampleInjectionHelperMethod(string content)
+    {
+        content = EnsureHelperMethodIsStatic(content, "logSampleInjectionApplied");
+        if (HasStaticHelperMethod(content, "logSampleInjectionApplied"))
+        {
+            return content;
+        }
+
+        return InsertLinesBeforeEndClass(content, BuildSampleInjectionHelperMethods());
+    }
+
     private static string EnsureHelpersForReferencedCalls(string content, string classDescriptor)
     {
         if (content.Contains($"{classDescriptor}->loadFridaGadget()V", StringComparison.Ordinal) &&
@@ -276,6 +346,12 @@ public sealed class SmaliPatchService : ISmaliPatchService
             content = EnsureDelayedLoadHelperMembers(content, classDescriptor);
         }
 
+        if (content.Contains($"{classDescriptor}->logSampleInjectionApplied()V", StringComparison.Ordinal) &&
+            !HasStaticHelperMethod(content, "logSampleInjectionApplied"))
+        {
+            content = EnsureSampleInjectionHelperMethod(content);
+        }
+
         return content;
     }
 
@@ -288,7 +364,13 @@ public sealed class SmaliPatchService : ISmaliPatchService
         }
 
         var referencesDelayedHelper = content.Contains($"{classDescriptor}->loadFridaGadgetIfNeeded()V", StringComparison.Ordinal);
-        return referencesDelayedHelper && !HasStaticHelperMethod(content, "loadFridaGadgetIfNeeded");
+        if (referencesDelayedHelper && !HasStaticHelperMethod(content, "loadFridaGadgetIfNeeded"))
+        {
+            return true;
+        }
+
+        var referencesSampleHelper = content.Contains($"{classDescriptor}->logSampleInjectionApplied()V", StringComparison.Ordinal);
+        return referencesSampleHelper && !HasStaticHelperMethod(content, "logSampleInjectionApplied");
     }
 
     private static string EnsureHelperMethodIsStatic(string content, string methodName)
@@ -334,9 +416,17 @@ public sealed class SmaliPatchService : ISmaliPatchService
         return content.Insert(endClassMatch.Index, method);
     }
 
-    private static string InjectCallIntoLifecycleMethod(string content, string classDescriptor, string methodName, string methodSignature, string superClassDescriptor)
+    private static string InjectCallIntoLifecycleMethod(
+        string content,
+        string classDescriptor,
+        string methodName,
+        string methodSignature,
+        string superClassDescriptor,
+        ScriptInjectionProfile profile)
     {
-        var helperMethodName = methodName == "onResume" ? "loadFridaGadgetIfNeeded" : "loadFridaGadget";
+        var helperMethodName = profile == ScriptInjectionProfile.SampleInjection
+            ? "logSampleInjectionApplied"
+            : methodName == "onResume" ? "loadFridaGadgetIfNeeded" : "loadFridaGadget";
         var methodPattern = new Regex($@"(?ms)(\.method[^\n]* {methodName}{Regex.Escape(methodSignature)}\s+)(.*?)(\.end method)");
         var match = methodPattern.Match(content);
 
@@ -359,11 +449,6 @@ public sealed class SmaliPatchService : ISmaliPatchService
             }
             else
             {
-                if (methodName == "onCreate")
-                {
-                    return content;
-                }
-
                 var split = body.Split(Environment.NewLine);
                 var insertAt = Array.FindIndex(split, line => line.TrimStart().StartsWith(".locals", StringComparison.Ordinal) || line.TrimStart().StartsWith(".registers", StringComparison.Ordinal));
                 if (insertAt >= 0)
@@ -385,13 +470,13 @@ public sealed class SmaliPatchService : ISmaliPatchService
             ? $".method protected onResume()V{Environment.NewLine}" +
               "    .locals 0" + Environment.NewLine +
               $"    invoke-super {{p0}}, {superClassDescriptor}->onResume()V{Environment.NewLine}" +
-              $"    invoke-static {{}}, {classDescriptor}->loadFridaGadgetIfNeeded()V{Environment.NewLine}" +
+              $"    invoke-static {{}}, {classDescriptor}->{helperMethodName}()V{Environment.NewLine}" +
               "    return-void" + Environment.NewLine +
               ".end method" + Environment.NewLine + Environment.NewLine
             : $".method protected onCreate(Landroid/os/Bundle;)V{Environment.NewLine}" +
               "    .locals 0" + Environment.NewLine +
               $"    invoke-super {{p0, p1}}, {superClassDescriptor}->onCreate(Landroid/os/Bundle;)V{Environment.NewLine}" +
-              $"    invoke-static {{}}, {classDescriptor}->loadFridaGadget()V{Environment.NewLine}" +
+              $"    invoke-static {{}}, {classDescriptor}->{helperMethodName}()V{Environment.NewLine}" +
               "    return-void" + Environment.NewLine +
               ".end method" + Environment.NewLine + Environment.NewLine;
 
@@ -413,5 +498,218 @@ public sealed class SmaliPatchService : ISmaliPatchService
         }
 
         return matches[^1];
+    }
+
+    private static (bool Success, string? Error) PatchApplicationSmali(string decompiledDirectory)
+    {
+        var (applicationDescriptor, applicationSmaliPath) = ResolveOrCreateApplicationClass(decompiledDirectory);
+        if (string.IsNullOrWhiteSpace(applicationDescriptor) || string.IsNullOrWhiteSpace(applicationSmaliPath))
+        {
+            return (false, "Unable to resolve Application class for Frida gadget loading.");
+        }
+
+        var originalContent = File.Exists(applicationSmaliPath) ? File.ReadAllText(applicationSmaliPath) : BuildDefaultApplicationSmali(applicationDescriptor);
+        var superClass = ExtractSuperClassDescriptor(originalContent) ?? "Landroid/app/Application;";
+        var patched = originalContent;
+
+        patched = EnsureApplicationGadgetMembers(patched, applicationDescriptor);
+        patched = EnsureAttachBaseContextLoadsGadget(patched, applicationDescriptor, superClass);
+        patched = EnsureOnCreateGuardLoadsGadget(patched, applicationDescriptor, superClass);
+
+        if (!string.Equals(patched, originalContent, StringComparison.Ordinal))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(applicationSmaliPath)!);
+            File.WriteAllText(applicationSmaliPath, patched);
+        }
+
+        return (true, null);
+    }
+
+    private static (string Descriptor, string SmaliPath) ResolveOrCreateApplicationClass(string decompiledDirectory)
+    {
+        var manifestPath = Path.Combine(decompiledDirectory, "AndroidManifest.xml");
+        var packageName = ReadPackageName(decompiledDirectory) ?? "com.pulseapk.generated";
+        var applicationName = ReadApplicationName(manifestPath);
+
+        var fqcn = ResolveApplicationFqcn(packageName, applicationName);
+        var descriptor = $"L{fqcn.Replace('.', '/')};";
+        var relativePath = fqcn.Replace('.', Path.DirectorySeparatorChar) + ".smali";
+
+        var smaliRoots = Directory.EnumerateDirectories(decompiledDirectory, "smali*", SearchOption.TopDirectoryOnly).ToList();
+        if (smaliRoots.Count == 0)
+        {
+            var root = Path.Combine(decompiledDirectory, "smali");
+            Directory.CreateDirectory(root);
+            smaliRoots.Add(root);
+        }
+
+        foreach (var smaliRoot in smaliRoots)
+        {
+            var direct = Path.Combine(smaliRoot, relativePath);
+            if (File.Exists(direct))
+            {
+                return (descriptor, direct);
+            }
+        }
+
+        return (descriptor, Path.Combine(smaliRoots[0], relativePath));
+    }
+
+    private static string? ReadApplicationName(string manifestPath)
+    {
+        if (!File.Exists(manifestPath))
+        {
+            return null;
+        }
+
+        var manifestContent = File.ReadAllText(manifestPath);
+        var applicationMatch = Regex.Match(manifestContent, @"<application\b[^>]*\bandroid:name\s*=\s*['""](?<name>[^'""]+)['""]");
+        return applicationMatch.Success ? applicationMatch.Groups["name"].Value : null;
+    }
+
+    private static string ResolveApplicationFqcn(string packageName, string? applicationName)
+    {
+        if (string.IsNullOrWhiteSpace(applicationName))
+        {
+            return $"{packageName}.PulseFridaApplication";
+        }
+
+        var trimmed = applicationName.Trim();
+        if (trimmed.StartsWith(".", StringComparison.Ordinal))
+        {
+            return packageName + trimmed;
+        }
+
+        if (!trimmed.Contains(".", StringComparison.Ordinal))
+        {
+            return $"{packageName}.{trimmed}";
+        }
+
+        return trimmed;
+    }
+
+    private static string BuildDefaultApplicationSmali(string applicationDescriptor)
+    {
+        return
+            $".class public {applicationDescriptor}{Environment.NewLine}" +
+            ".super Landroid/app/Application;" + Environment.NewLine + Environment.NewLine +
+            ".method public constructor <init>()V" + Environment.NewLine +
+            "    .locals 0" + Environment.NewLine + Environment.NewLine +
+            "    invoke-direct {p0}, Landroid/app/Application;-><init>()V" + Environment.NewLine + Environment.NewLine +
+            "    return-void" + Environment.NewLine +
+            ".end method" + Environment.NewLine + Environment.NewLine +
+            ".end class";
+    }
+
+    private static string EnsureApplicationGadgetMembers(string content, string classDescriptor)
+    {
+        if (!content.Contains(".field private static gadgetLoaded:Z", StringComparison.Ordinal))
+        {
+            content = InsertLinesBeforeEndClass(content, [".field private static gadgetLoaded:Z", string.Empty]);
+        }
+
+        if (!HasStaticHelperMethod(content, "loadFridaGadgetSafely"))
+        {
+            var lines = new[]
+            {
+                ".method private static loadFridaGadgetSafely()V",
+                "    .locals 3",
+                "",
+                $"    sget-boolean v0, {classDescriptor}->gadgetLoaded:Z",
+                "    if-nez v0, :done",
+                "",
+                "    :try_start_0",
+                "    const-string v0, \"frida-gadget\"",
+                "    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V",
+                "    const/4 v0, 0x1",
+                $"    sput-boolean v0, {classDescriptor}->gadgetLoaded:Z",
+                "    const-string v0, \"FridaGadget\"",
+                "    const-string v1, \"Frida gadget loaded in attachBaseContext; you can attach now.\"",
+                "    invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I",
+                "    move-result v0",
+                "    :try_end_0",
+                "    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0",
+                "",
+                "    goto :done",
+                "",
+                "    :catch_0",
+                "    move-exception v0",
+                "    const-string v1, \"FridaGadget\"",
+                "    const-string v2, \"Failed to load frida-gadget\"",
+                "    invoke-static {v1, v2, v0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I",
+                "    move-result v1",
+                "",
+                "    :done",
+                "    return-void",
+                ".end method",
+                ""
+            };
+            content = InsertLinesBeforeEndClass(content, lines);
+        }
+
+        return content;
+    }
+
+    private static string EnsureAttachBaseContextLoadsGadget(string content, string classDescriptor, string superClassDescriptor)
+    {
+        return EnsureLifecycleMethodCall(
+            content,
+            classDescriptor,
+            "attachBaseContext",
+            "(Landroid/content/Context;)V",
+            $"invoke-super {{p0, p1}}, {superClassDescriptor}->attachBaseContext(Landroid/content/Context;)V",
+            "    invoke-static {}, " + classDescriptor + "->loadFridaGadgetSafely()V");
+    }
+
+    private static string EnsureOnCreateGuardLoadsGadget(string content, string classDescriptor, string superClassDescriptor)
+    {
+        return EnsureLifecycleMethodCall(
+            content,
+            classDescriptor,
+            "onCreate",
+            "()V",
+            $"invoke-super {{p0}}, {superClassDescriptor}->onCreate()V",
+            "    invoke-static {}, " + classDescriptor + "->loadFridaGadgetSafely()V");
+    }
+
+    private static string EnsureLifecycleMethodCall(
+        string content,
+        string classDescriptor,
+        string methodName,
+        string methodSignature,
+        string superInvokeLine,
+        string helperInvokeLine)
+    {
+        var methodPattern = new Regex($@"(?ms)(\.method[^\n]* {methodName}{Regex.Escape(methodSignature)}\s+)(.*?)(\.end method)");
+        var match = methodPattern.Match(content);
+        if (match.Success)
+        {
+            var body = match.Groups[2].Value;
+            if (!body.Contains("loadFridaGadgetSafely", StringComparison.Ordinal))
+            {
+                var superCallPattern = new Regex($@"(?m)^(?<indent>\s*)invoke-super \{{[^\n]+\}}, [^\n]+->{methodName}{Regex.Escape(methodSignature)}\s*$");
+                var superCallMatch = superCallPattern.Match(body);
+                if (superCallMatch.Success)
+                {
+                    var insertIndex = superCallMatch.Index + superCallMatch.Length;
+                    body = body.Insert(insertIndex, Environment.NewLine + helperInvokeLine);
+                }
+                else
+                {
+                    body = body.TrimEnd() + Environment.NewLine + "    " + superInvokeLine + Environment.NewLine + helperInvokeLine + Environment.NewLine;
+                }
+            }
+
+            return content[..match.Groups[2].Index] + body + content[(match.Groups[2].Index + match.Groups[2].Length)..];
+        }
+
+        var newMethod =
+            $".method protected {methodName}{methodSignature}{Environment.NewLine}" +
+            "    .locals 0" + Environment.NewLine +
+            $"    {superInvokeLine}{Environment.NewLine}" +
+            $"{helperInvokeLine}{Environment.NewLine}" +
+            "    return-void" + Environment.NewLine +
+            ".end method" + Environment.NewLine + Environment.NewLine;
+        return InsertLinesBeforeEndClass(content, [newMethod]);
     }
 }

@@ -322,6 +322,9 @@
   <data name="PatchHeader" xml:space="preserve">
     <value>Patch APK</value>
   </data>
+  <data name="PatchBetaWarning" xml:space="preserve">
+    <value>Beta functionality. Use at your own risk</value>
+  </data>
   <data name="PatchSignOutputApk" xml:space="preserve">
     <value>Sign output APK (ubersigner)</value>
   </data>
@@ -330,6 +333,9 @@
   </data>
   <data name="PatchSkipDexValidation" xml:space="preserve">
     <value>Skip DEX validation</value>
+  </data>
+  <data name="PatchAddCustomScript" xml:space="preserve">
+    <value>Add custom script</value>
   </data>
   <data name="PatchScriptProfile" xml:space="preserve">
     <value>Script profile</value>
@@ -347,7 +353,13 @@
     <value>patched.apk</value>
   </data>
   <data name="PatchScriptInjectFridaGadget" xml:space="preserve">
-    <value>Inject frida-gadget</value>
+    <value>Inject gadget and custom script</value>
+  </data>
+  <data name="PatchScriptSampleInjection" xml:space="preserve">
+    <value>Sample injection</value>
+  </data>
+  <data name="PatchScriptSampleInjectionInfo" xml:space="preserve">
+    <value>Sample injection only adds a smali log helper; no native library is loaded.</value>
   </data>
   <data name="PatchDexDisabledDefault" xml:space="preserve">
     <value>Disabled (default)</value>
@@ -430,6 +442,9 @@ Output: {0}</value>
   </data>
   <data name="PatchPreviewSkipDexValidation" xml:space="preserve">
     <value>Skip DEX validation: {0}</value>
+  </data>
+  <data name="PatchPreviewAddCustomScript" xml:space="preserve">
+    <value>Add custom script: {0}</value>
   </data>
   <data name="PatchPreviewDexPreservation" xml:space="preserve">
     <value>Dex preservation: {0}</value>

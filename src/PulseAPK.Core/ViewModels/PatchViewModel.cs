@@ -6,16 +6,20 @@ using PulseAPK.Core.Models;
 using PulseAPK.Core.Services;
 using PulseAPK.Core.Utils;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Properties = PulseAPK.Core.Properties;
 
 namespace PulseAPK.Core.ViewModels;
 
 
 public sealed record DexPreservationOption(string Label, DexPreservationMode Mode);
-public sealed record ScriptInjectionOption(string Label, bool IsEnabledForSelection);
+public sealed record ScriptInjectionOption(string Label, ScriptInjectionProfile Profile);
 
 public partial class PatchViewModel : ObservableObject
 {
+    internal const string ExpectedFridaInteractionPath = "./libfrida-gadget.script.so";
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsHintVisible))]
     private string _apkPath = string.Empty;
@@ -33,7 +37,7 @@ public partial class PatchViewModel : ObservableObject
     private bool _signApk = true;
 
     [ObservableProperty]
-    private bool _injectLibForAllArchitectures;
+    private bool _injectLibForAllArchitectures = true;
 
     [ObservableProperty]
     private bool _skipDexValidation;
@@ -42,7 +46,8 @@ public partial class PatchViewModel : ObservableObject
     private DexPreservationOption _selectedDexPreservationOption = new("Disabled (default)", DexPreservationMode.Disabled);
 
     [ObservableProperty]
-    private ScriptInjectionOption _selectedScriptInjectionOption = new("Inject frida-gadget", false);
+    [NotifyPropertyChangedFor(nameof(IsSampleInjectionProfileSelected))]
+    private ScriptInjectionOption _selectedScriptInjectionOption = new("Inject gadget and custom script", ScriptInjectionProfile.FridaGadget);
 
     [ObservableProperty]
     private string _consoleLog;
@@ -63,6 +68,8 @@ public partial class PatchViewModel : ObservableObject
     public IReadOnlyList<DexPreservationOption> DexPreservationOptions { get; }
 
     public IReadOnlyList<ScriptInjectionOption> ScriptInjectionOptions { get; }
+    
+    public bool IsSampleInjectionProfileSelected => SelectedScriptInjectionOption.Profile == ScriptInjectionProfile.SampleInjection;
 
     public PatchViewModel(
         IFilePickerService filePickerService,
@@ -88,7 +95,10 @@ public partial class PatchViewModel : ObservableObject
 
         ScriptInjectionOptions =
         [
-            new(L("PatchScriptInjectFridaGadget"), false)
+            new(L("PatchScriptInjectFridaGadget"), ScriptInjectionProfile.FridaGadget),
+            new("Inject gadget listener", ScriptInjectionProfile.FridaListener),
+            new("Inject frida-gadget only", ScriptInjectionProfile.InjectFridaGadgetOnly),
+            new(L("PatchScriptSampleInjection"), ScriptInjectionProfile.SampleInjection)
         ];
 
         _consoleLog = Properties.Resources.WaitingForCommand;
@@ -97,6 +107,7 @@ public partial class PatchViewModel : ObservableObject
         SelectedScriptInjectionOption = ScriptInjectionOptions[0];
 
         OutputFolderPath = EnsureCompiledDirectory();
+        EnsureUserScriptTemplatesExist();
         OutputApkName = L("PatchOutputApkNamePlaceholder");
         UpdateOutputApkPath();
         UpdateCommandPreview();
@@ -130,7 +141,10 @@ public partial class PatchViewModel : ObservableObject
     partial void OnInjectLibForAllArchitecturesChanged(bool value) => UpdateCommandPreview();
     partial void OnSkipDexValidationChanged(bool value) => UpdateCommandPreview();
     partial void OnSelectedDexPreservationOptionChanged(DexPreservationOption value) => UpdateCommandPreview();
-    partial void OnSelectedScriptInjectionOptionChanged(ScriptInjectionOption value) => UpdateCommandPreview();
+    partial void OnSelectedScriptInjectionOptionChanged(ScriptInjectionOption value)
+    {
+        UpdateCommandPreview();
+    }
 
     [RelayCommand]
     private async Task BrowseApk()
@@ -219,6 +233,7 @@ public partial class PatchViewModel : ObservableObject
             {
                 InputApkPath = ApkPath,
                 OutputApkPath = OutputApkPath,
+                ScriptInjectionProfile = SelectedScriptInjectionOption.Profile,
                 SignOutput = SignApk,
                 DecodeResources = true,
                 DecodeSources = true,
@@ -229,11 +244,16 @@ public partial class PatchViewModel : ObservableObject
                 DexPreservationMode = selectedDexMode,
                 ConfirmDangerousDexReplacement = confirmedDangerousDexMode,
                 InjectForAllArchitectures = InjectLibForAllArchitectures,
-                SkipDexValidation = SkipDexValidation
+                SkipDexValidation = SkipDexValidation,
+                ScriptFilePath = ResolveScriptPathForProfile(SelectedScriptInjectionOption.Profile),
+                ConfigFilePath = ResolveConfigPathForProfile(SelectedScriptInjectionOption.Profile)
             };
 
             AppendLog(BuildRunSummary(request));
             AppendLog(string.Format(L("PatchLogScriptProfile"), SelectedScriptInjectionOption.Label));
+            AppendLog($"Resolved ScriptFilePath: {request.ScriptFilePath ?? "<none>"}");
+            AppendLog($"Resolved ConfigFilePath: {request.ConfigFilePath ?? "<none>"}");
+            AppendLog($"Effective config interaction.path: {GetEffectiveConfigInteractionPath(request.ConfigFilePath) ?? "<none>"}");
 
             var result = await _patchPipelineService.RunAsync(request);
 
@@ -349,6 +369,166 @@ public partial class PatchViewModel : ObservableObject
         ConsoleLog = builder.ToString();
     }
 
+
+    private static string? ResolveScriptPathForProfile(ScriptInjectionProfile profile)
+    {
+        return profile switch
+        {
+            ScriptInjectionProfile.FridaGadget => ResolveCustomScriptPath("script.js"),
+            ScriptInjectionProfile.FridaListener => ResolveCustomScriptPath("frida-listener.js"),
+            ScriptInjectionProfile.InjectFridaGadgetOnly => null,
+            _ => null
+        };
+    }
+
+    private static string? ResolveConfigPathForProfile(ScriptInjectionProfile profile)
+    {
+        return profile is ScriptInjectionProfile.FridaGadget or ScriptInjectionProfile.FridaListener
+            ? ResolveCustomScriptPath("frida-gadget.config")
+            : null;
+    }
+
+    private static void EnsureUserScriptTemplatesExist()
+    {
+        EnsureUserScriptTemplateExists("script.js");
+        EnsureUserScriptTemplateExists("frida-listener.js");
+        EnsureUserScriptTemplateExists("frida-gadget.config");
+    }
+
+    private static void EnsureUserScriptTemplateExists(string fileName)
+    {
+        var userScriptsDirectory = PathUtils.GetDefaultScriptsPath();
+        Directory.CreateDirectory(userScriptsDirectory);
+
+        var targetPath = Path.Combine(userScriptsDirectory, fileName);
+        if (File.Exists(targetPath))
+        {
+            if (string.Equals(fileName, "frida-gadget.config", StringComparison.OrdinalIgnoreCase))
+            {
+                MigrateFridaGadgetConfigIfNeeded(targetPath);
+            }
+
+            return;
+        }
+
+        var sourcePath = GetBundledCustomScriptPath(fileName);
+        if (File.Exists(sourcePath))
+        {
+            File.Copy(sourcePath, targetPath, overwrite: false);
+            if (string.Equals(fileName, "frida-gadget.config", StringComparison.OrdinalIgnoreCase))
+            {
+                MigrateFridaGadgetConfigIfNeeded(targetPath);
+            }
+        }
+    }
+
+    private static string ResolveCustomScriptPath(string fileName)
+    {
+        EnsureUserScriptTemplateExists(fileName);
+
+        var userScriptPath = Path.Combine(PathUtils.GetDefaultScriptsPath(), fileName);
+        if (File.Exists(userScriptPath))
+        {
+            return userScriptPath;
+        }
+
+        return GetBundledCustomScriptPath(fileName);
+    }
+
+    private static string GetBundledCustomScriptPath(string fileName)
+    {
+        var fromCurrentDirectory = Path.Combine(Directory.GetCurrentDirectory(), "scripts", fileName);
+        if (File.Exists(fromCurrentDirectory))
+        {
+            return fromCurrentDirectory;
+        }
+
+        return Path.Combine(AppContext.BaseDirectory, "scripts", fileName);
+    }
+
+    internal static string? ReadFridaInteractionPath(string configPath)
+    {
+        if (!File.Exists(configPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            var configContent = File.ReadAllText(configPath);
+            if (!TryGetInteractionPath(configContent, out var interactionPath))
+            {
+                return null;
+            }
+
+            return interactionPath;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    internal static bool MigrateFridaGadgetConfigIfNeeded(string configPath)
+    {
+        if (!File.Exists(configPath))
+        {
+            return false;
+        }
+
+        try
+        {
+            var configContent = File.ReadAllText(configPath);
+            var root = JsonNode.Parse(configContent) as JsonObject;
+            var interaction = root?["interaction"] as JsonObject;
+            if (interaction is null)
+            {
+                return false;
+            }
+
+            var currentPath = interaction["path"]?.GetValue<string>();
+            if (string.Equals(currentPath, ExpectedFridaInteractionPath, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            interaction["path"] = ExpectedFridaInteractionPath;
+            var migratedConfig = root!.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(configPath, migratedConfig);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    internal static bool TryGetInteractionPath(string configContent, out string? interactionPath)
+    {
+        interactionPath = null;
+
+        try
+        {
+            var root = JsonNode.Parse(configContent) as JsonObject;
+            var interaction = root?["interaction"] as JsonObject;
+            interactionPath = interaction?["path"]?.GetValue<string>();
+            return !string.IsNullOrWhiteSpace(interactionPath);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string? GetEffectiveConfigInteractionPath(string? configPath)
+    {
+        if (string.IsNullOrWhiteSpace(configPath))
+        {
+            return null;
+        }
+
+        return ReadFridaInteractionPath(configPath);
+    }
 
     private string L(string key) => _localizationService[key];
 

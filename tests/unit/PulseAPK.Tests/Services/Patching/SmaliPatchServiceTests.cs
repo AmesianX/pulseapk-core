@@ -1,9 +1,48 @@
 using PulseAPK.Core.Services.Patching;
+using PulseAPK.Core.Models;
 
 namespace PulseAPK.Tests.Services.Patching;
 
 public class SmaliPatchServiceTests
 {
+    [Fact]
+    public async Task PatchAsync_CreatesAndPatchesApplicationClass_FromManifestAndroidName()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"smali-patch-app-{Guid.NewGuid():N}");
+        var activityPath = Path.Combine(root, "smali", "com", "example");
+        Directory.CreateDirectory(activityPath);
+
+        var manifestPath = Path.Combine(root, "AndroidManifest.xml");
+        await File.WriteAllTextAsync(
+            manifestPath,
+            "<manifest package='com.example.app' xmlns:android='http://schemas.android.com/apk/res/android'><application android:name='.CustomApp'><activity android:name='com.example.MainActivity' /></application></manifest>");
+
+        var activityFile = Path.Combine(activityPath, "MainActivity.smali");
+        await File.WriteAllTextAsync(activityFile, @".class public Lcom/example/MainActivity;
+.super Landroid/app/Activity;
+
+.method protected onCreate(Landroid/os/Bundle;)V
+    .locals 0
+    invoke-super {p0, p1}, Landroid/app/Activity;->onCreate(Landroid/os/Bundle;)V
+    return-void
+.end method
+
+.end class");
+
+        var service = new SmaliPatchService();
+        var result = await service.PatchAsync(root, "com.example.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
+
+        var appSmali = Path.Combine(root, "smali", "com", "example", "app", "CustomApp.smali");
+        var appContent = await File.ReadAllTextAsync(appSmali);
+
+        Assert.True(result.Success);
+        Assert.Contains(".field private static gadgetLoaded:Z", appContent, StringComparison.Ordinal);
+        Assert.Contains(".method protected attachBaseContext(Landroid/content/Context;)V", appContent, StringComparison.Ordinal);
+        Assert.Contains("invoke-static {}, Lcom/example/app/CustomApp;->loadFridaGadgetSafely()V", appContent, StringComparison.Ordinal);
+        Assert.Contains("Failed to load frida-gadget", appContent, StringComparison.Ordinal);
+        Assert.Contains("Frida gadget loaded in attachBaseContext; you can attach now.", appContent, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task PatchAsync_IsIdempotent_ForRepeatedPatches()
     {
@@ -25,9 +64,9 @@ public class SmaliPatchServiceTests
 
         var service = new SmaliPatchService();
 
-        var first = await service.PatchAsync(root, "com.example.MainActivity", useDelayedLoad: false);
+        var first = await service.PatchAsync(root, "com.example.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
         var firstContent = await File.ReadAllTextAsync(file);
-        var second = await service.PatchAsync(root, "com.example.MainActivity", useDelayedLoad: false);
+        var second = await service.PatchAsync(root, "com.example.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
         var secondContent = await File.ReadAllTextAsync(file);
 
         Assert.True(first.Success);
@@ -64,8 +103,8 @@ public class SmaliPatchServiceTests
 
         var service = new SmaliPatchService();
 
-        var immediate = await service.PatchAsync(immediateRoot, "com.example.MainActivity", useDelayedLoad: false);
-        var delayed = await service.PatchAsync(delayedRoot, "com.example.MainActivity", useDelayedLoad: true);
+        var immediate = await service.PatchAsync(immediateRoot, "com.example.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
+        var delayed = await service.PatchAsync(delayedRoot, "com.example.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: true);
 
         var immediateOutput = await File.ReadAllTextAsync(immediateFile);
         var delayedOutput = await File.ReadAllTextAsync(delayedFile);
@@ -74,13 +113,46 @@ public class SmaliPatchServiceTests
         Assert.True(delayed.Success);
         Assert.NotEqual(immediateOutput, delayedOutput);
         Assert.Contains("invoke-static {}, Lcom/example/MainActivity;->loadFridaGadget()V", immediateOutput, StringComparison.Ordinal);
+        Assert.Contains("Frida gadget loaded in activity lifecycle; you can attach now.", immediateOutput, StringComparison.Ordinal);
         Assert.Contains(".catch Ljava/lang/Throwable;", immediateOutput, StringComparison.Ordinal);
         Assert.DoesNotContain("arm64-v8a", immediateOutput, StringComparison.Ordinal);
         Assert.Contains("invoke-static {}, Lcom/example/MainActivity;->loadFridaGadgetIfNeeded()V", delayedOutput, StringComparison.Ordinal);
+        Assert.Contains("Frida gadget loaded in activity lifecycle; you can attach now.", delayedOutput, StringComparison.Ordinal);
         Assert.Contains(".catch Ljava/lang/Throwable;", delayedOutput, StringComparison.Ordinal);
         Assert.DoesNotContain("arm64-v8a", delayedOutput, StringComparison.Ordinal);
         Assert.Contains(".method protected onResume()V", delayedOutput, StringComparison.Ordinal);
         Assert.DoesNotContain("loadFridaGadgetIfNeeded", immediateOutput, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PatchAsync_SampleProfile_InsertsLogOnlyHelperWithoutNativeLoad()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"smali-patch-sample-{Guid.NewGuid():N}");
+        var smaliPath = Path.Combine(root, "smali", "com", "example");
+        Directory.CreateDirectory(smaliPath);
+
+        var file = Path.Combine(smaliPath, "MainActivity.smali");
+        await File.WriteAllTextAsync(file, @".class public Lcom/example/MainActivity;
+.super Landroid/app/Activity;
+
+.method protected onCreate(Landroid/os/Bundle;)V
+    .locals 0
+    invoke-super {p0, p1}, Landroid/app/Activity;->onCreate(Landroid/os/Bundle;)V
+    return-void
+.end method
+
+.end class");
+
+        var service = new SmaliPatchService();
+
+        var result = await service.PatchAsync(root, "com.example.MainActivity", ScriptInjectionProfile.SampleInjection, useDelayedLoad: false);
+        var output = await File.ReadAllTextAsync(file);
+
+        Assert.True(result.Success);
+        Assert.Contains("logSampleInjectionApplied", output, StringComparison.Ordinal);
+        Assert.Contains("PulseAPK: The app sample patch was applied", output, StringComparison.Ordinal);
+        Assert.DoesNotContain("loadLibrary", output, StringComparison.Ordinal);
+        Assert.DoesNotContain("frida-gadget", output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -98,7 +170,7 @@ public class SmaliPatchServiceTests
 
         var service = new SmaliPatchService();
 
-        var result = await service.PatchAsync(root, "com.example.MainActivity", useDelayedLoad: false);
+        var result = await service.PatchAsync(root, "com.example.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
         var output = await File.ReadAllTextAsync(file);
 
         Assert.True(result.Success);
@@ -120,7 +192,7 @@ public class SmaliPatchServiceTests
 
         var service = new SmaliPatchService();
 
-        var result = await service.PatchAsync(root, "com.example.MainActivity", useDelayedLoad: true);
+        var result = await service.PatchAsync(root, "com.example.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: true);
         var output = await File.ReadAllTextAsync(file);
 
         Assert.True(result.Success);
@@ -141,7 +213,7 @@ public class SmaliPatchServiceTests
 
         var service = new SmaliPatchService();
 
-        var result = await service.PatchAsync(root, "com.example.MainActivity", useDelayedLoad: false);
+        var result = await service.PatchAsync(root, "com.example.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
 
         Assert.False(result.Success);
         Assert.NotNull(result.Error);
@@ -186,7 +258,7 @@ public class SmaliPatchServiceTests
 
         var service = new SmaliPatchService();
 
-        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", useDelayedLoad: false);
+        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
         var expectedOutput = await File.ReadAllTextAsync(expectedFile);
         var duplicateOutput = await File.ReadAllTextAsync(duplicateFile);
 
@@ -216,7 +288,7 @@ public class SmaliPatchServiceTests
     .end class");
 
         var service = new SmaliPatchService();
-        var result = await service.PatchAsync(root, "com.example.SplashScreen", useDelayedLoad: false);
+        var result = await service.PatchAsync(root, "com.example.SplashScreen", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
         var output = await File.ReadAllTextAsync(file);
 
         Assert.True(result.Success);
@@ -245,7 +317,7 @@ public class SmaliPatchServiceTests
 .end class");
 
         var service = new SmaliPatchService();
-        var result = await service.PatchAsync(root, "com.example.SplashScreen", useDelayedLoad: false);
+        var result = await service.PatchAsync(root, "com.example.SplashScreen", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
         var output = await File.ReadAllTextAsync(file);
 
         Assert.True(result.Success);
@@ -273,7 +345,7 @@ public class SmaliPatchServiceTests
 .end class");
 
         var service = new SmaliPatchService();
-        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", useDelayedLoad: true);
+        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", ScriptInjectionProfile.FridaGadget, useDelayedLoad: true);
         var output = await File.ReadAllTextAsync(file);
 
         Assert.True(result.Success);
@@ -309,7 +381,7 @@ public class SmaliPatchServiceTests
 .end class");
 
         var service = new SmaliPatchService();
-        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", useDelayedLoad: false);
+        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
         var output = await File.ReadAllTextAsync(file);
 
         Assert.True(result.Success);
@@ -345,7 +417,7 @@ public class SmaliPatchServiceTests
 .end class");
 
         var service = new SmaliPatchService();
-        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", useDelayedLoad: false);
+        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
         var output = await File.ReadAllTextAsync(file);
 
         Assert.True(result.Success);
@@ -382,7 +454,7 @@ public class SmaliPatchServiceTests
 .end class");
 
         var service = new SmaliPatchService();
-        var result = await service.PatchAsync(root, "zed.rainxch.githubstore.MainActivity", useDelayedLoad: false);
+        var result = await service.PatchAsync(root, "zed.rainxch.githubstore.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
         var output = await File.ReadAllTextAsync(file);
 
         Assert.True(result.Success);
@@ -420,7 +492,7 @@ public class SmaliPatchServiceTests
 	.end class");
 
         var service = new SmaliPatchService();
-        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", useDelayedLoad: false);
+        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
 
         Assert.True(result.Success);
     }
@@ -443,7 +515,7 @@ public class SmaliPatchServiceTests
 .end method");
 
         var service = new SmaliPatchService();
-        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", useDelayedLoad: false);
+        var result = await service.PatchAsync(root, "com.app.damnvulnerablebank.SplashScreen", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
 
         var output = await File.ReadAllTextAsync(file);
 
@@ -474,7 +546,7 @@ public class SmaliPatchServiceTests
 .end class");
 
         var service = new SmaliPatchService();
-        var result = await service.PatchAsync(root, "com.example.MainActivity", useDelayedLoad: false);
+        var result = await service.PatchAsync(root, "com.example.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
         var output = await File.ReadAllTextAsync(file);
 
         Assert.True(result.Success);
@@ -485,7 +557,39 @@ public class SmaliPatchServiceTests
     }
 
     [Fact]
-    public async Task PatchAsync_FailsWhenOnCreateHasNoSuperOnCreateAnchor()
+    public async Task PatchAsync_OnCreateFallbackInsertsHelperAfterLocals_WhenSuperCallFormatIsUnexpected()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"smali-patch-oncreate-fallback-{Guid.NewGuid():N}");
+        var smaliPath = Path.Combine(root, "smali", "com", "example");
+        Directory.CreateDirectory(smaliPath);
+
+        var file = Path.Combine(smaliPath, "MainActivity.smali");
+        await File.WriteAllTextAsync(file, @".class public Lcom/example/MainActivity;
+.super Landroid/app/Activity;
+
+.method protected onCreate(Landroid/os/Bundle;)V
+    .locals 1
+    invoke-super {p0, p1},Landroid/app/Activity;->onCreate(Landroid/os/Bundle;)V
+    const/4 v0, 0x0
+    return-void
+.end method
+
+.end class");
+
+        var service = new SmaliPatchService();
+        var result = await service.PatchAsync(root, "com.example.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
+        var output = await File.ReadAllTextAsync(file);
+
+        Assert.True(result.Success);
+        Assert.Contains(
+            ".locals 1\n    invoke-static {}, Lcom/example/MainActivity;->loadFridaGadget()V\n    invoke-super {p0, p1},Landroid/app/Activity;->onCreate(Landroid/os/Bundle;)V",
+            output,
+            StringComparison.Ordinal);
+        Assert.Contains(".method private static loadFridaGadget()V", output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PatchAsync_FailsWhenOnCreateHasNoRegistersOrLocalsDirective()
     {
         var root = Path.Combine(Path.GetTempPath(), $"smali-patch-missing-oncreate-anchor-{Guid.NewGuid():N}");
         var smaliPath = Path.Combine(root, "smali", "com", "example");
@@ -496,14 +600,13 @@ public class SmaliPatchServiceTests
 .super Landroid/app/Activity;
 
 .method protected onCreate(Landroid/os/Bundle;)V
-    .locals 0
     return-void
 .end method
 
 .end class");
 
         var service = new SmaliPatchService();
-        var result = await service.PatchAsync(root, "com.example.MainActivity", useDelayedLoad: false);
+        var result = await service.PatchAsync(root, "com.example.MainActivity", ScriptInjectionProfile.FridaGadget, useDelayedLoad: false);
 
         Assert.False(result.Success);
         Assert.Equal("Unable to find an injection point in activity smali file.", result.Error);
