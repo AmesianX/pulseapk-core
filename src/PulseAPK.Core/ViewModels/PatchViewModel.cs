@@ -45,6 +45,7 @@ public partial class PatchViewModel : ObservableObject
     private DexPreservationOption _selectedDexPreservationOption = new("Disabled (default)", DexPreservationMode.Disabled);
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanAddCustomScript))]
     private ScriptInjectionOption _selectedScriptInjectionOption = new("Inject frida-gadget", true);
 
     [ObservableProperty]
@@ -66,6 +67,8 @@ public partial class PatchViewModel : ObservableObject
     public IReadOnlyList<DexPreservationOption> DexPreservationOptions { get; }
 
     public IReadOnlyList<ScriptInjectionOption> ScriptInjectionOptions { get; }
+    
+    public bool CanAddCustomScript => SelectedScriptInjectionOption.InjectFridaGadget;
 
     public PatchViewModel(
         IFilePickerService filePickerService,
@@ -136,7 +139,15 @@ public partial class PatchViewModel : ObservableObject
     partial void OnSkipDexValidationChanged(bool value) => UpdateCommandPreview();
     partial void OnAddCustomScriptChanged(bool value) => UpdateCommandPreview();
     partial void OnSelectedDexPreservationOptionChanged(DexPreservationOption value) => UpdateCommandPreview();
-    partial void OnSelectedScriptInjectionOptionChanged(ScriptInjectionOption value) => UpdateCommandPreview();
+    partial void OnSelectedScriptInjectionOptionChanged(ScriptInjectionOption value)
+    {
+        if (!CanAddCustomScript)
+        {
+            AddCustomScript = false;
+        }
+
+        UpdateCommandPreview();
+    }
 
     [RelayCommand]
     private async Task BrowseApk()
