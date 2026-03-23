@@ -442,11 +442,6 @@ public sealed class SmaliPatchService : ISmaliPatchService
             }
             else
             {
-                if (methodName == "onCreate")
-                {
-                    return content;
-                }
-
                 var split = body.Split(Environment.NewLine);
                 var insertAt = Array.FindIndex(split, line => line.TrimStart().StartsWith(".locals", StringComparison.Ordinal) || line.TrimStart().StartsWith(".registers", StringComparison.Ordinal));
                 if (insertAt >= 0)
